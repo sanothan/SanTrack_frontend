@@ -1,25 +1,26 @@
-/**
- * Dashboard Layout
- * Sidebar + Topbar for authenticated users
- */
-
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from './Sidebar';
+import TopNav from './TopNav';
 
 const DashboardLayout = () => {
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 flex flex-col ml-64">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <h1 className="text-xl font-semibold text-gray-800">SanTrack Dashboard</h1>
-        </header>
-        <main className="flex-1 p-6 overflow-auto">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+    return (
+        <div className="flex h-screen bg-background overflow-hidden relative">
+            <Sidebar isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
+
+            <div className="flex-1 flex flex-col w-full min-w-0">
+                <TopNav toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
+
+                <main className="flex-1 overflow-y-auto w-full">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 h-full">
+                        <Outlet />
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
 };
 
 export default DashboardLayout;
