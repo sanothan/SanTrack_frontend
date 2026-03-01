@@ -12,6 +12,7 @@ const PublicLayout = () => {
     const navLinks = [
         { title: 'Home', path: '/' },
         { title: 'About Us', path: '/about' },
+        { title: 'Contact Us', path: '/contact' },
         { title: 'Report Issue', path: '/report' }
     ];
 
@@ -68,7 +69,7 @@ const PublicLayout = () => {
                                     to="/login"
                                     className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors border border-white/20"
                                 >
-                                    Staff Login
+                                    Login
                                 </Link>
                             )}
                         </div>
@@ -106,7 +107,7 @@ const PublicLayout = () => {
                             onClick={() => setIsMenuOpen(false)}
                             className="block px-3 py-2 mt-4 rounded-md text-base font-medium bg-white/10 text-white border border-white/20 text-center"
                         >
-                            Staff Login
+                            Login
                         </Link>
                     </div>
                 )}
@@ -133,6 +134,7 @@ const PublicLayout = () => {
                             <ul className="space-y-2 text-sm">
                                 <li><Link to="/" className="hover:text-primary transition-colors">Home</Link></li>
                                 <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+                                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
                                 <li><Link to="/report" className="hover:text-primary transition-colors">Report an Issue</Link></li>
                             </ul>
                         </div>

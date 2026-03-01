@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import PublicLayout from './layouts/PublicLayout';
 import PublicHome from './pages/PublicHome';
 import PublicAbout from './pages/PublicAbout';
+import PublicContact from './pages/PublicContact';
 import PublicReport from './pages/PublicReport';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
@@ -25,16 +26,20 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Public Routes without Layout */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Signup />} />
-          <Route path="/signup" element={<Signup />} />
-
           {/* Public Routes with Layout */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<PublicHome />} />
             <Route path="/about" element={<PublicAbout />} />
+            <Route path="/contact" element={<PublicContact />} />
             <Route path="/report" element={<PublicReport />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Signup />} />
+            <Route path="/signup" element={<Signup />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<div>Settings</div>} />
+            </Route>
           </Route>
 
           {/* Main Dashboard Layout wrapper block */}
@@ -53,7 +58,8 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['inspector']} />}>
               <Route path="/inspector" element={<InspectorDashboard />} />
               <Route path="/inspector/facilities" element={<FacilityManagement />} />
-              <Route path="/inspector/inspections" element={<InspectionForm />} />
+              <Route path="/inspector/inspections" element={<InspectionManagement />} />
+              <Route path="/inspector/inspections/new" element={<InspectionForm />} />
               <Route path="/inspector/issues" element={<IssueTracking />} />
             </Route>
 
@@ -64,8 +70,6 @@ function App() {
               <Route path="/community/issues" element={<IssueTracking />} />
             </Route>
 
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<div>Settings</div>} />
           </Route>
 
           {/* Fallback */}
