@@ -1,16 +1,81 @@
-# React + Vite
+# SanTrack Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The client-side web application for the SanTrack platform. Built with React and Vite, it serves multiple distinct user roles (Admin, Inspector, Community, and Public) to monitor and optimize rural sanitation and water access.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Framework:** React 18
+*   **Build Tool:** Vite
+*   **Styling:** Tailwind CSS
+*   **Routing:** React Router DOM (v6)
+*   **Icons:** Lucide React
+*   **HTTP Client:** Axios
+*   **Components:** Custom UI styled directly with Tailwind classes
 
-## React Compiler
+## Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1.  **Public Portal:** An entry site outlining the project mission with tools for anonymous users to report sanitation issues and view contact details securely.
+2.  **Role-Based Dashboards:**
+    *   **Admin Dashboard:** Overview of users, villages, facilities, inspections, and platform-wide issues.
+    *   **Inspector Dashboard:** Focused tools for conducting field inspections, logging hygiene scores, and attaching photo evidence.
+    *   **Community Dashboard:** Ability to view local facilities, track personal reported issues, and coordinate easily.
+3.  **Authentication Flow:** Secure JWT handling managed via a central `AuthContext`.
+4.  **Responsive Layouts:** Sidebar vs Top-nav layouts dynamically adjusting per auth-level using `DashboardLayout` and `PublicLayout`.
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+SanTrack_frontend/
+├── public/              # Static assets (favicon, images)
+├── src/
+│   ├── components/      # Reusable UI components (ProtectedRoute, Modal, etc)
+│   ├── config/          # Client-side configuration (Axios interceptors)
+│   ├── context/         # React Context providers (AuthContext)
+│   ├── layouts/         # Layout wrappers (PublicLayout, DashboardLayout, Sidebar)
+│   ├── pages/           # Page routes (PublicHome, AdminDashboard, InspectionForm)
+│   ├── services/        # API integration wrappers (auth, inspection, issue services)
+│   ├── utils/           # Utility functions (cn for tailwind classes, formatting)
+│   ├── App.jsx          # Route definitions and entry mapping
+│   ├── index.css        # Tailwind directives and global styles
+│   └── main.jsx         # React application mount
+├── index.html           # HTML template
+├── tailwind.config.js   # Tailwind theme, plugins, and color definitions
+└── vite.config.js       # Vite configuration
+```
+
+## Getting Started
+
+### Prerequisites
+
+*   Node.js (v18+ recommended)
+*   SanTrack Backend server running locally or hosted for API requests.
+
+### Setup & Installation
+
+1.  **Navigate to the frontend directory:**
+    ```bash
+    cd SanTrack_frontend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Variables**
+    By default, the Vite proxy configuration connects local API calls directly to `http://localhost:5000`. You can change the backend URL in `src/config/axios.js` for production deployments.
+
+### Running the App
+
+**Start Development Server:**
+```bash
+npm run dev
+```
+
+The application will be served locally, typically at `http://localhost:5173`. Open your browser to view it.
+
+**Build for Production:**
+```bash
+npm run build
+```
+This generates optimized static files into a `dist/` directory ready for deployment on platforms like Vercel, Netlify, or Nginx.

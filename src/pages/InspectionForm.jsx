@@ -48,10 +48,16 @@ const InspectionForm = () => {
             if (formData.score < 4) status = 'critical';
             else if (formData.score < 7) status = 'needs_attention';
 
-            await inspectionService.createInspection({
+            const payload = {
                 ...formData,
-                status
-            });
+                status,
+            };
+
+            if (imagePreview) {
+                payload.images = [imagePreview];
+            }
+
+            await inspectionService.createInspection(payload);
             setSuccess(true);
             setFormData({ facilityId: '', score: 5, remarks: '' });
             setImagePreview(null);
