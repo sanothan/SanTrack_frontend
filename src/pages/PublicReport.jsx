@@ -4,11 +4,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { facilityService } from '../services/facilityService';
 import { issueService } from '../services/issueService';
 import { useAuth } from '../context/AuthContext';
+import { villageService } from '../services/villageService';
 
 const PublicReport = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [facilities, setFacilities] = useState([]);
+    const [villages, setVillages] = useState([]);
+    const [selectedVillageId, setSelectedVillageId] = useState('');
     const [formData, setFormData] = useState({
         facilityId: '',
         description: '',
@@ -18,16 +21,36 @@ const PublicReport = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchFacilities = async () => {
+        const fetchVillages = async () => {
             try {
-                const data = await facilityService.getPublicFacilities();
-                setFacilities(data);
+                const villagesData = await villageService.getVillages();
+                const villagesList = villagesData?.data || villagesData || [];
+                setVillages(Array.isArray(villagesList) ? villagesList : []);
+            } catch (err) {
+                console.error("Could not fetch villages:", err);
+            }
+        };
+        fetchVillages();
+    }, []);
+
+    useEffect(() => {
+        const fetchFacilities = async () => {
+            if (!selectedVillageId) {
+                setFacilities([]);
+                return;
+            }
+            try {
+                const facilitiesData = await facilityService.getPublicFacilities({ villageId: selectedVillageId });
+                const facilitiesList = facilitiesData?.data || facilitiesData || [];
+                setFacilities(Array.isArray(facilitiesList) ? facilitiesList : []);
             } catch (err) {
                 console.error("Could not fetch facilities:", err);
             }
         };
         fetchFacilities();
-    }, []);
+    }, [selectedVillageId]);
+
+    const filteredFacilities = facilities;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -42,6 +65,7 @@ const PublicReport = () => {
             await issueService.createIssue(formData);
             setSuccess(true);
             setFormData({ facilityId: '', description: '' });
+            setSelectedVillageId('');
 
             setTimeout(() => {
                 setSuccess(false);
@@ -108,6 +132,28 @@ const PublicReport = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Village Selection */}
+                        <div className="space-y-2 relative">
+                            <label className="text-sm font-medium flex items-center">
+                                <Building2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                                Which village? <span className="text-red-500 ml-1">*</span>
+                            </label>
+                            <select
+                                required
+                                value={selectedVillageId}
+                                onChange={(e) => {
+                                    setSelectedVillageId(e.target.value);
+                                    setFormData({ ...formData, facilityId: '' }); // Reset facility when village changes
+                                }}
+                                className="flex h-12 w-full rounded-md border bg-background px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                            >
+                                <option value="" disabled>-- Select a village --</option>
+                                {villages.map(v => (
+                                    <option key={v._id} value={v._id}>{v.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* Facility Selection */}
                         <div className="space-y-2 relative">
                             <label className="text-sm font-medium flex items-center">
@@ -116,12 +162,15 @@ const PublicReport = () => {
                             </label>
                             <select
                                 required
+                                disabled={!selectedVillageId}
                                 value={formData.facilityId}
                                 onChange={(e) => setFormData({ ...formData, facilityId: e.target.value })}
-                                className="flex h-12 w-full rounded-md border bg-background px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                className="flex h-12 w-full rounded-md border bg-background px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow disabled:opacity-50 disabled:bg-muted"
                             >
-                                <option value="" disabled>-- Select a public facility --</option>
-                                {facilities.map(f => (
+                                <option value="" disabled>
+                                    {!selectedVillageId ? "-- Select a village first --" : "-- Select a public facility --"}
+                                </option>
+                                {filteredFacilities.map(f => (
                                     <option key={f._id} value={f._id}>{f.name}</option>
                                 ))}
                             </select>
@@ -154,6 +203,8 @@ const PublicReport = () => {
                         </div>
                     </form>
                 </div>
+
+                <button>Delete</button>
             </div>
         </main>
     );

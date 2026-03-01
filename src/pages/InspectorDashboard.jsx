@@ -20,7 +20,7 @@ const InspectorDashboard = () => {
                     <p className="text-muted-foreground">Welcome back, {user?.name || 'Inspector'}. Here are your pending tasks.</p>
                 </div>
                 <div className="flex space-x-2">
-                    <Link to="/inspector/inspections" className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90">
+                    <Link to="/inspector/inspections/new" className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90">
                         <ClipboardCheck className="w-4 h-4 mr-2" />
                         New Inspection
                     </Link>

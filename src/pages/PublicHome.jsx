@@ -22,9 +22,9 @@ const PublicHome = () => {
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <Link to="/report" className="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl flex items-center">
                             <AlertTriangle className="w-5 h-5 mr-2" />
-                            Report a Problem Now
+                            Report a Problem
                         </Link>
-                        <Link to="/about" className="px-8 py-4 bg-primary-foreground/10 text-white rounded-full font-bold text-lg hover:bg-primary-foreground/20 border border-white/20 transition-all flex items-center">
+                        <Link to="/about" className="px-8 py-4 bg-primary-foreground/10 text-white rounded-full font-bold text-lg hover:bg-primary-foreground/20 border border-white/20 transition-all flex items-center hidden lg:flex">
                             Learn How It Works
                             <ArrowRight className="w-5 h-5 ml-2" />
                         </Link>
@@ -83,9 +83,11 @@ const PublicHome = () => {
                     <p className="text-muted-foreground mb-8 text-lg">
                         You don't need an account. You just need to tell us where the problem is. Let's fix it together.
                     </p>
-                    <Link to="/report" className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm">
-                        File a Support Ticket <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
+                    <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <Link to="/report" className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-sm">
+                            File a Support Ticket <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
