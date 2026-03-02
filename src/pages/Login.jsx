@@ -3,13 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Droplet, Lock, Mail } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -31,6 +32,25 @@ const Login = () => {
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Invalid email or password');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setError('');
+        setLoading(true);
+        try {
+            const data = await googleLogin(credentialResponse.credential);
+            if (data?.user?.role === 'admin') {
+                navigate('/admin');
+            } else if (data?.user?.role === 'inspector') {
+                navigate('/inspector');
+            } else {
+                navigate('/');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Google login failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -119,6 +139,26 @@ const Login = () => {
                         <div>
                             <Link to="/report" className="text-primary hover:underline font-medium">Return to Public Report Page</Link>
                         </div>
+                    </div>
+
+                    {/* Google OAuth Divider */}
+                    <div className="mt-6 flex items-center gap-3">
+                        <div className="flex-1 h-px bg-border" />
+                        <span className="text-xs text-muted-foreground">or continue with</span>
+                        <div className="flex-1 h-px bg-border" />
+                    </div>
+
+                    {/* Google Login Button */}
+                    <div className="mt-4 flex justify-center">
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={() => setError('Google login was unsuccessful. Please try again.')}
+                            useOneTap={false}
+                            size="large"
+                            width="100%"
+                            text="continue_with"
+                            shape="rectangular"
+                        />
                     </div>
                 </div>
             </div>

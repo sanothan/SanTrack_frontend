@@ -120,7 +120,7 @@ const PublicReport = () => {
                             <CheckCircle className="w-6 h-6 mr-3 flex-shrink-0" />
                             <div>
                                 <h4 className="font-bold">Thank you!</h4>
-                                <p className="text-sm">Your report has been successfully submitted to the authorities.</p>
+                                <p className="text-sm">Your report has been successfully submitted. A confirmation email has been sent to your registered address.</p>
                             </div>
                         </div>
                     )}
@@ -203,8 +203,6 @@ const PublicReport = () => {
                         </div>
                     </form>
                 </div>
-
-                <button>Delete</button>
             </div>
         </main>
     );
