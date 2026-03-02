@@ -22,9 +22,10 @@ const VillageManagement = () => {
 
     const [formData, setFormData] = useState({
         name: '', district: '', state: '', population: '',
-        lat: '', lng: ''
+        lat: '', lng: '', address: ''
     });
     const [submitting, setSubmitting] = useState(false);
+    const [isGeocoding, setIsGeocoding] = useState(false);
 
     useEffect(() => {
         fetchVillages();
@@ -46,7 +47,7 @@ const VillageManagement = () => {
         }
     };
 
-    const resetForm = () => setFormData({ name: '', district: '', state: '', population: '', lat: '', lng: '' });
+    const resetForm = () => setFormData({ name: '', district: '', state: '', population: '', lat: '', lng: '', address: '' });
 
     // ── ADD ──────────────────────────────────────────────────────────────────
     const handleAddVillage = async (e) => {
@@ -86,7 +87,8 @@ const VillageManagement = () => {
             state: village.state || '',
             population: village.population || '',
             lat: village.gps?.lat ?? '',
-            lng: village.gps?.lng ?? ''
+            lng: village.gps?.lng ?? '',
+            address: '' // This will be filled by geocoding if they click the map again
         });
         setIsEditModalOpen(true);
     };
@@ -137,6 +139,27 @@ const VillageManagement = () => {
             console.error('Error deleting village', error);
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleLocationSelect = async ({ lat, lng }) => {
+        setFormData(prev => ({ ...prev, lat, lng }));
+
+        setIsGeocoding(true);
+        try {
+            const data = await villageService.reverseGeocode(lat, lng);
+            if (data) {
+                setFormData(prev => ({
+                    ...prev,
+                    address: data.formattedAddress || '',
+                    district: data.district || prev.district,
+                    state: data.state || prev.state
+                }));
+            }
+        } catch (error) {
+            console.error("Geocoding failed:", error);
+        } finally {
+            setIsGeocoding(false);
         }
     };
 
@@ -302,17 +325,27 @@ const VillageManagement = () => {
                         </label>
                         {isAddModalOpen && (
                             <LocationPicker
-                                onLocationSelect={({ lat, lng }) =>
-                                    setFormData(prev => ({ ...prev, lat, lng }))
-                                }
+                                onLocationSelect={handleLocationSelect}
                             />
                         )}
                         {formData.lat && formData.lng ? (
-                            <div className="flex items-center space-x-3 text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md px-3 py-2">
-                                <MapPin className="w-4 h-4 text-green-600 shrink-0" />
-                                <span className="text-green-800 dark:text-green-300 font-medium">
-                                    Location selected: {Number(formData.lat).toFixed(5)}°N, {Number(formData.lng).toFixed(5)}°E
-                                </span>
+                            <div className="space-y-2">
+                                <div className="flex items-center space-x-3 text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md px-3 py-2">
+                                    <MapPin className="w-4 h-4 text-green-600 shrink-0" />
+                                    <span className="text-green-800 dark:text-green-300 font-medium">
+                                        Location selected: {Number(formData.lat).toFixed(5)}°N, {Number(formData.lng).toFixed(5)}°E
+                                    </span>
+                                </div>
+                                {isGeocoding ? (
+                                    <div className="flex items-center space-x-2 text-xs text-muted-foreground animate-pulse px-1">
+                                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                                        <span>Fetching address details...</span>
+                                    </div>
+                                ) : formData.address && (
+                                    <div className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded border border-dashed italic">
+                                        Detected: {formData.address}
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="flex items-center space-x-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md px-3 py-2">
@@ -398,17 +431,27 @@ const VillageManagement = () => {
                                         ? { lat: Number(formData.lat), lng: Number(formData.lng) }
                                         : null
                                 }
-                                onLocationSelect={({ lat, lng }) =>
-                                    setFormData(prev => ({ ...prev, lat, lng }))
-                                }
+                                onLocationSelect={handleLocationSelect}
                             />
                         )}
                         {formData.lat && formData.lng ? (
-                            <div className="flex items-center space-x-3 text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md px-3 py-2">
-                                <MapPin className="w-4 h-4 text-green-600 shrink-0" />
-                                <span className="text-green-800 dark:text-green-300 font-medium">
-                                    Location selected: {Number(formData.lat).toFixed(5)}°N, {Number(formData.lng).toFixed(5)}°E
-                                </span>
+                            <div className="space-y-2">
+                                <div className="flex items-center space-x-3 text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md px-3 py-2">
+                                    <MapPin className="w-4 h-4 text-green-600 shrink-0" />
+                                    <span className="text-green-800 dark:text-green-300 font-medium">
+                                        Location selected: {Number(formData.lat).toFixed(5)}°N, {Number(formData.lng).toFixed(5)}°E
+                                    </span>
+                                </div>
+                                {isGeocoding ? (
+                                    <div className="flex items-center space-x-2 text-xs text-muted-foreground animate-pulse px-1">
+                                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                                        <span>Fetching address details...</span>
+                                    </div>
+                                ) : formData.address && (
+                                    <div className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded border border-dashed italic">
+                                        Detected: {formData.address}
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="flex items-center space-x-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md px-3 py-2">
