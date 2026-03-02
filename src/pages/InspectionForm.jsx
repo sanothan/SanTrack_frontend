@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Camera, Save, XCircle, CheckCircle } from 'lucide-react';
+import { Camera, Save, XCircle, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { inspectionService } from '../services/inspectionService';
 import { facilityService } from '../services/facilityService';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const InspectionForm = () => {
     const [formData, setFormData] = useState({
@@ -10,7 +11,11 @@ const InspectionForm = () => {
         score: 5,
         remarks: '',
     });
+    const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [uploadedImage, setUploadedImage] = useState(null); // { url, publicId }
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [facilities, setFacilities] = useState([]);
@@ -28,22 +33,55 @@ const InspectionForm = () => {
         loadFacilities();
     }, []);
 
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        // Local preview while uploading
+        const reader = new FileReader();
+        reader.onloadend = () => setImagePreview(reader.result);
+        reader.readAsDataURL(file);
+
+        setImageFile(file);
+        setUploadError('');
+        setUploadedImage(null);
+
+        // Upload to backend immediately
+        setUploading(true);
+        try {
+            const formPayload = new FormData();
+            formPayload.append('image', file);
+
+            const response = await api.post('/uploads/image', formPayload, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            setUploadedImage({ url: response.data.url, publicId: response.data.publicId });
+            // Replace local preview with Cloudinary URL
+            setImagePreview(response.data.url);
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Image upload failed. Try again.';
+            setUploadError(msg);
+            setImagePreview(null);
+            setImageFile(null);
+        } finally {
+            setUploading(false);
         }
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreview(null);
+        setImageFile(null);
+        setUploadedImage(null);
+        setUploadError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (uploading) return; // wait until upload is done
+
         setLoading(true);
         try {
-            // Determine status based on score
             let status = 'good';
             if (formData.score < 4) status = 'critical';
             else if (formData.score < 7) status = 'needs_attention';
@@ -51,16 +89,14 @@ const InspectionForm = () => {
             const payload = {
                 ...formData,
                 status,
+                images: uploadedImage ? [uploadedImage] : [],
             };
-
-            if (imagePreview) {
-                payload.images = [imagePreview];
-            }
 
             await inspectionService.createInspection(payload);
             setSuccess(true);
             setFormData({ facilityId: '', score: 5, remarks: '' });
             setImagePreview(null);
+            setUploadedImage(null);
             setTimeout(() => {
                 setSuccess(false);
                 navigate('/inspector');
@@ -137,13 +173,34 @@ const InspectionForm = () => {
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Photo Evidence</label>
+
+                        {uploadError && (
+                            <div className="p-3 flex items-center text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                                <AlertCircle className="w-4 h-4 mr-2 shrink-0" />
+                                {uploadError}
+                            </div>
+                        )}
+
                         <div className="flex items-center justify-center w-full">
                             {imagePreview ? (
                                 <div className="relative w-full h-64 rounded-lg overflow-hidden border">
                                     <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
+                                    {/* Uploading overlay */}
+                                    {uploading && (
+                                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
+                                            <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                                            <span className="text-sm font-medium">Uploading…</span>
+                                        </div>
+                                    )}
+                                    {/* Cloudinary indicator */}
+                                    {uploadedImage && !uploading && (
+                                        <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                                            <CheckCircle className="w-3 h-3 mr-1" /> Uploaded
+                                        </div>
+                                    )}
                                     <button
                                         type="button"
-                                        onClick={() => setImagePreview(null)}
+                                        onClick={handleRemoveImage}
                                         className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
                                     >
                                         <XCircle className="w-6 h-6" />
@@ -154,9 +211,14 @@ const InspectionForm = () => {
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6 text-muted-foreground">
                                         <Camera className="w-8 h-8 mb-3" />
                                         <p className="text-sm"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p className="text-xs mt-1">PNG, JPG up to 5MB</p>
+                                        <p className="text-xs mt-1">JPG, PNG, WebP up to 5MB</p>
                                     </div>
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        onChange={handleImageChange}
+                                    />
                                 </label>
                             )}
                         </div>
@@ -164,15 +226,25 @@ const InspectionForm = () => {
                 </div>
 
                 <div className="p-4 border-t bg-muted/10 flex justify-end space-x-3">
-                    <button type="button" className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors">
+                    <button
+                        type="button"
+                        onClick={() => navigate('/inspector')}
+                        className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-muted transition-colors"
+                    >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || uploading}
                         className="bg-primary text-primary-foreground px-6 py-2 rounded-md font-medium text-sm flex items-center shadow-sm hover:bg-primary/90 disabled:opacity-70 transition-colors"
                     >
-                        {loading ? 'Submitting...' : <><Save className="w-4 h-4 mr-2" /> Save Form</>}
+                        {loading ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting…</>
+                        ) : uploading ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading image…</>
+                        ) : (
+                            <><Save className="w-4 h-4 mr-2" /> Save Form</>
+                        )}
                     </button>
                 </div>
             </form>
