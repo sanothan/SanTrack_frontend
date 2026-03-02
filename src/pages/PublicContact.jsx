@@ -13,7 +13,7 @@ const PublicContact = () => {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x border-b">
+                <div className="border-b">
                     {/* Contact Information */}
                     <div className="p-8 md:p-12 space-y-8">
                         <div>
@@ -23,7 +23,7 @@ const PublicContact = () => {
                             </p>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="grid sm:grid-cols-2 gap-6">
                             <div className="flex items-start space-x-4">
                                 <div className="p-3 bg-primary/10 text-primary rounded-full shrink-0">
                                     <MapPin className="w-6 h-6" />
@@ -77,21 +77,6 @@ const PublicContact = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Map Interface */}
-                    <div className="p-0 bg-muted/20 relative min-h-[400px]">
-                        <iframe
-                            src="https://maps.google.com/maps?q=SLIIT%20Malabe%20Campus&t=&z=13&ie=UTF8&iwloc=&output=embed"
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                            allowFullScreen=""
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title="SLIIT Malabe Campus Map"
-                            className="bg-muted"
-                        ></iframe>
                     </div>
                 </div>
 

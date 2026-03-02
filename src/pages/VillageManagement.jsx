@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, MapPin, Edit2, Trash2 } from 'lucide-react';
 import { villageService } from '../services/villageService';
 import Modal from '../components/Modal';
+import LocationPicker from '../components/LocationPicker';
 
 const VillageManagement = () => {
     const [villages, setVillages] = useState([]);
@@ -19,7 +20,10 @@ const VillageManagement = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deletingVillage, setDeletingVillage] = useState(null);
 
-    const [formData, setFormData] = useState({ name: '', district: '', state: '', population: '' });
+    const [formData, setFormData] = useState({
+        name: '', district: '', state: '', population: '',
+        lat: '', lng: ''
+    });
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -34,19 +38,23 @@ const VillageManagement = () => {
         } catch (error) {
             console.error(error);
             setVillages([
-                { _id: '1', name: 'Springfield', population: 5000, facilitiesCount: 12 },
-                { _id: '2', name: 'Shelbyville', population: 4200, facilitiesCount: 8 }
+                { _id: '1', name: 'Springfield', population: 5000, facilitiesCount: 12, gps: { lat: 7.8731, lng: 80.7718 } },
+                { _id: '2', name: 'Shelbyville', population: 4200, facilitiesCount: 8, gps: { lat: 6.9271, lng: 79.8612 } }
             ]);
         } finally {
             setLoading(false);
         }
     };
 
-    const resetForm = () => setFormData({ name: '', district: '', state: '', population: '' });
+    const resetForm = () => setFormData({ name: '', district: '', state: '', population: '', lat: '', lng: '' });
 
     // ── ADD ──────────────────────────────────────────────────────────────────
     const handleAddVillage = async (e) => {
         e.preventDefault();
+        if (!formData.lat || !formData.lng) {
+            alert('Please click on the map to select the village location.');
+            return;
+        }
         setSubmitting(true);
         try {
             await villageService.createVillage({
@@ -54,7 +62,10 @@ const VillageManagement = () => {
                 district: formData.district,
                 state: formData.state,
                 population: Number(formData.population) || 0,
-                gps: { lat: 0.0, lng: 0.0 }
+                gps: {
+                    lat: Number(formData.lat),
+                    lng: Number(formData.lng)
+                }
             });
             setIsAddModalOpen(false);
             resetForm();
@@ -73,20 +84,30 @@ const VillageManagement = () => {
             name: village.name || '',
             district: village.district || '',
             state: village.state || '',
-            population: village.population || ''
+            population: village.population || '',
+            lat: village.gps?.lat ?? '',
+            lng: village.gps?.lng ?? ''
         });
         setIsEditModalOpen(true);
     };
 
     const handleEditVillage = async (e) => {
         e.preventDefault();
+        if (!formData.lat || !formData.lng) {
+            alert('Please click on the map to select the village location.');
+            return;
+        }
         setSubmitting(true);
         try {
             await villageService.updateVillage(editingVillage._id, {
                 name: formData.name,
                 district: formData.district,
                 state: formData.state,
-                population: Number(formData.population) || 0
+                population: Number(formData.population) || 0,
+                gps: {
+                    lat: Number(formData.lat),
+                    lng: Number(formData.lng)
+                }
             });
             setIsEditModalOpen(false);
             setEditingVillage(null);
@@ -121,52 +142,7 @@ const VillageManagement = () => {
 
     const filtered = villages.filter(v => v.name.toLowerCase().includes(search.toLowerCase()));
 
-    // Shared form fields used in both Add and Edit modals
-    const VillageFormFields = () => (
-        <>
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Village Name <span className="text-red-500">*</span></label>
-                <input
-                    type="text"
-                    required
-                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">District <span className="text-red-500">*</span></label>
-                    <input
-                        type="text"
-                        required
-                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                        value={formData.district}
-                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">State <span className="text-red-500">*</span></label>
-                    <input
-                        type="text"
-                        required
-                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                        value={formData.state}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    />
-                </div>
-            </div>
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Population</label>
-                <input
-                    type="number"
-                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    value={formData.population}
-                    onChange={(e) => setFormData({ ...formData, population: e.target.value })}
-                />
-            </div>
-        </>
-    );
+
 
     return (
         <div className="space-y-6">
@@ -207,19 +183,20 @@ const VillageManagement = () => {
                                 <th scope="col" className="px-6 py-3">Village Name</th>
                                 <th scope="col" className="px-6 py-3">Population</th>
                                 <th scope="col" className="px-6 py-3">Facilities</th>
+                                <th scope="col" className="px-6 py-3">Coordinates</th>
                                 <th scope="col" className="px-6 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-8 text-center text-muted-foreground">
+                                    <td colSpan="5" className="px-6 py-8 text-center text-muted-foreground">
                                         <span className="animate-pulse">Loading data...</span>
                                     </td>
                                 </tr>
                             ) : filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-8 text-center text-muted-foreground">
+                                    <td colSpan="5" className="px-6 py-8 text-center text-muted-foreground">
                                         No villages found.
                                     </td>
                                 </tr>
@@ -235,6 +212,11 @@ const VillageManagement = () => {
                                             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
                                                 {village.facilitiesCount || 0} Facilities
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-muted-foreground font-mono">
+                                            {village.gps?.lat != null
+                                                ? `${(+village.gps.lat).toFixed(4)}, ${(+village.gps.lng).toFixed(4)}`
+                                                : '—'}
                                         </td>
                                         <td className="px-6 py-4 text-right space-x-2">
                                             <button
@@ -267,10 +249,79 @@ const VillageManagement = () => {
                 </div>
             </div>
 
-            {/* Add Village Modal */}
-            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Village">
+            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Village" maxWidth="max-w-2xl">
                 <form onSubmit={handleAddVillage} className="space-y-4">
-                    <VillageFormFields />
+                    {/* Village Name */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Village Name <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            required
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                    </div>
+                    {/* District + State */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">District <span className="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                required
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.district}
+                                onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">State / Province</label>
+                            <input
+                                type="text"
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.state}
+                                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    {/* Population */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Population</label>
+                        <input
+                            type="number"
+                            min="0"
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.population}
+                            onChange={(e) => setFormData({ ...formData, population: e.target.value })}
+                        />
+                    </div>
+                    {/* Map */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                            Village Location <span className="text-red-500">*</span>
+                        </label>
+                        {isAddModalOpen && (
+                            <LocationPicker
+                                onLocationSelect={({ lat, lng }) =>
+                                    setFormData(prev => ({ ...prev, lat, lng }))
+                                }
+                            />
+                        )}
+                        {formData.lat && formData.lng ? (
+                            <div className="flex items-center space-x-3 text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md px-3 py-2">
+                                <MapPin className="w-4 h-4 text-green-600 shrink-0" />
+                                <span className="text-green-800 dark:text-green-300 font-medium">
+                                    Location selected: {Number(formData.lat).toFixed(5)}°N, {Number(formData.lng).toFixed(5)}°E
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center space-x-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md px-3 py-2">
+                                <MapPin className="w-4 h-4 shrink-0" />
+                                <span>No location selected yet — click the map above</span>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="pt-4 flex justify-end space-x-2">
                         <button
                             type="button"
@@ -290,10 +341,83 @@ const VillageManagement = () => {
                 </form>
             </Modal>
 
-            {/* Edit Village Modal */}
-            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Village">
+            {/* ── Edit Village Modal ────────────────────────────────────────────── */}
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Village" maxWidth="max-w-2xl">
                 <form onSubmit={handleEditVillage} className="space-y-4">
-                    <VillageFormFields />
+                    {/* Village Name */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Village Name <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            required
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                    </div>
+                    {/* District + State */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">District <span className="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                required
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.district}
+                                onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">State / Province</label>
+                            <input
+                                type="text"
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.state}
+                                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    {/* Population */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Population</label>
+                        <input
+                            type="number"
+                            min="0"
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.population}
+                            onChange={(e) => setFormData({ ...formData, population: e.target.value })}
+                        />
+                    </div>
+                    {/* Map */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Village Location</label>
+                        {isEditModalOpen && (
+                            <LocationPicker
+                                initialLocation={
+                                    formData.lat && formData.lng
+                                        ? { lat: Number(formData.lat), lng: Number(formData.lng) }
+                                        : null
+                                }
+                                onLocationSelect={({ lat, lng }) =>
+                                    setFormData(prev => ({ ...prev, lat, lng }))
+                                }
+                            />
+                        )}
+                        {formData.lat && formData.lng ? (
+                            <div className="flex items-center space-x-3 text-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md px-3 py-2">
+                                <MapPin className="w-4 h-4 text-green-600 shrink-0" />
+                                <span className="text-green-800 dark:text-green-300 font-medium">
+                                    Location selected: {Number(formData.lat).toFixed(5)}°N, {Number(formData.lng).toFixed(5)}°E
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center space-x-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md px-3 py-2">
+                                <MapPin className="w-4 h-4 shrink-0" />
+                                <span>No location selected yet — click the map above</span>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="pt-4 flex justify-end space-x-2">
                         <button
                             type="button"
@@ -313,11 +437,13 @@ const VillageManagement = () => {
                 </form>
             </Modal>
 
-            {/* Delete Confirmation Modal */}
+            {/* ── Delete Confirmation Modal ─────────────────────────────────────── */}
             <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Village">
                 <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingVillage?.name}</span>? This action cannot be undone.
+                        Are you sure you want to delete{' '}
+                        <span className="font-semibold text-foreground">{deletingVillage?.name}</span>?
+                        This action cannot be undone.
                     </p>
                     <div className="pt-2 flex justify-end space-x-2">
                         <button
