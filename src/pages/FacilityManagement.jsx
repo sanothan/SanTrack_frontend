@@ -126,66 +126,7 @@ const FacilityManagement = () => {
 
     const formatType = (type) => type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-    // Shared form fields used in both Add and Edit modals
-    const FacilityFormFields = () => (
-        <>
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Facility Name <span className="text-red-500">*</span></label>
-                <input
-                    type="text"
-                    required
-                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Central Water Tank"
-                />
-            </div>
 
-            <div className="space-y-2">
-                <label className="text-sm font-medium">Village <span className="text-red-500">*</span></label>
-                <select
-                    required
-                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    value={formData.villageId}
-                    onChange={(e) => setFormData({ ...formData, villageId: e.target.value })}
-                >
-                    <option value="" disabled>Select a village</option>
-                    {villages.map(v => (
-                        <option key={v._id} value={v._id}>{v.name} ({v.district})</option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Type <span className="text-red-500">*</span></label>
-                    <select
-                        required
-                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                        value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    >
-                        <option value="toilet">Public Toilet</option>
-                        <option value="well">Community Well</option>
-                        <option value="water_tank">Water Tank</option>
-                    </select>
-                </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Condition <span className="text-red-500">*</span></label>
-                    <select
-                        required
-                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                        value={formData.condition}
-                        onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                    >
-                        <option value="good">Good</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="critical">Critical</option>
-                    </select>
-                </div>
-            </div>
-        </>
-    );
 
     return (
         <div className="space-y-6">
@@ -308,7 +249,59 @@ const FacilityManagement = () => {
             {/* Add Facility Modal */}
             <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Facility">
                 <form onSubmit={handleAddFacility} className="space-y-4">
-                    <FacilityFormFields />
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Facility Name <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            required
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="e.g. Central Water Tank"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Village <span className="text-red-500">*</span></label>
+                        <select
+                            required
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.villageId}
+                            onChange={(e) => setFormData({ ...formData, villageId: e.target.value })}
+                        >
+                            <option value="" disabled>Select a village</option>
+                            {villages.map(v => (
+                                <option key={v._id} value={v._id}>{v.name} ({v.district})</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Type <span className="text-red-500">*</span></label>
+                            <select
+                                required
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.type}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            >
+                                <option value="toilet">Public Toilet</option>
+                                <option value="well">Community Well</option>
+                                <option value="water_tank">Water Tank</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Condition <span className="text-red-500">*</span></label>
+                            <select
+                                required
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.condition}
+                                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                            >
+                                <option value="good">Good</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className="pt-4 flex justify-end space-x-2">
                         <button
                             type="button"
@@ -331,7 +324,59 @@ const FacilityManagement = () => {
             {/* Edit Facility Modal */}
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Facility">
                 <form onSubmit={handleEditFacility} className="space-y-4">
-                    <FacilityFormFields />
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Facility Name <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            required
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="e.g. Central Water Tank"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Village <span className="text-red-500">*</span></label>
+                        <select
+                            required
+                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={formData.villageId}
+                            onChange={(e) => setFormData({ ...formData, villageId: e.target.value })}
+                        >
+                            <option value="" disabled>Select a village</option>
+                            {villages.map(v => (
+                                <option key={v._id} value={v._id}>{v.name} ({v.district})</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Type <span className="text-red-500">*</span></label>
+                            <select
+                                required
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.type}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            >
+                                <option value="toilet">Public Toilet</option>
+                                <option value="well">Community Well</option>
+                                <option value="water_tank">Water Tank</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Condition <span className="text-red-500">*</span></label>
+                            <select
+                                required
+                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                value={formData.condition}
+                                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                            >
+                                <option value="good">Good</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className="pt-4 flex justify-end space-x-2">
                         <button
                             type="button"

@@ -203,8 +203,6 @@ const PublicReport = () => {
                         </div>
                     </form>
                 </div>
-
-                <button>Delete</button>
             </div>
         </main>
     );
