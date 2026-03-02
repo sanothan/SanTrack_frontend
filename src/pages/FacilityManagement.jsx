@@ -5,8 +5,6 @@ import { facilityService } from '../services/facilityService';
 import { villageService } from '../services/villageService';
 import Modal from '../components/Modal';
 
-const emptyForm = { name: '', type: 'toilet', villageId: '', condition: 'good' };
-
 const FacilityManagement = () => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'admin';
@@ -22,13 +20,12 @@ const FacilityManagement = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingFacility, setEditingFacility] = useState(null);
 
-    // Delete confirmation modal
+    // Delete confirmation
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deletingFacility, setDeletingFacility] = useState(null);
 
-    const [formData, setFormData] = useState(emptyForm);
+    const [formData, setFormData] = useState({ name: '', type: 'toilet', villageId: '', condition: 'good' });
     const [submitting, setSubmitting] = useState(false);
-    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -50,14 +47,16 @@ const FacilityManagement = () => {
         }
     };
 
-    // ── Add ──────────────────────────────────────────────────────────────────
+    const resetForm = () => setFormData({ name: '', type: 'toilet', villageId: '', condition: 'good' });
+
+    // ── ADD ──────────────────────────────────────────────────────────────────
     const handleAddFacility = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
             await facilityService.createFacility(formData);
             setIsAddModalOpen(false);
-            setFormData(emptyForm);
+            resetForm();
             fetchData();
         } catch (error) {
             console.error(error);
@@ -66,7 +65,7 @@ const FacilityManagement = () => {
         }
     };
 
-    // ── Edit ─────────────────────────────────────────────────────────────────
+    // ── EDIT ─────────────────────────────────────────────────────────────────
     const openEditModal = (facility) => {
         setEditingFacility(facility);
         setFormData({
@@ -85,7 +84,7 @@ const FacilityManagement = () => {
             await facilityService.updateFacility(editingFacility._id, formData);
             setIsEditModalOpen(false);
             setEditingFacility(null);
-            setFormData(emptyForm);
+            resetForm();
             fetchData();
         } catch (error) {
             console.error('Error updating facility', error);
@@ -94,14 +93,14 @@ const FacilityManagement = () => {
         }
     };
 
-    // ── Delete ────────────────────────────────────────────────────────────────
+    // ── DELETE ────────────────────────────────────────────────────────────────
     const openDeleteModal = (facility) => {
         setDeletingFacility(facility);
         setIsDeleteModalOpen(true);
     };
 
     const handleDeleteFacility = async () => {
-        setDeleting(true);
+        setSubmitting(true);
         try {
             await facilityService.deleteFacility(deletingFacility._id);
             setIsDeleteModalOpen(false);
@@ -110,7 +109,7 @@ const FacilityManagement = () => {
         } catch (error) {
             console.error('Error deleting facility', error);
         } finally {
-            setDeleting(false);
+            setSubmitting(false);
         }
     };
 
@@ -127,7 +126,7 @@ const FacilityManagement = () => {
 
     const formatType = (type) => type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-    // ── Shared form fields ────────────────────────────────────────────────────
+    // Shared form fields used in both Add and Edit modals
     const FacilityFormFields = () => (
         <>
             <div className="space-y-2">
@@ -197,7 +196,7 @@ const FacilityManagement = () => {
                 </div>
                 {isAdmin && (
                     <button
-                        onClick={() => { setFormData(emptyForm); setIsAddModalOpen(true); }}
+                        onClick={() => { resetForm(); setIsAddModalOpen(true); }}
                         className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90"
                     >
                         <Plus className="w-4 h-4 mr-2" />
@@ -278,14 +277,14 @@ const FacilityManagement = () => {
                                                 <button
                                                     onClick={() => openEditModal(facility)}
                                                     className="text-muted-foreground hover:text-primary transition-colors"
-                                                    title="Edit facility"
+                                                    title="Edit"
                                                 >
                                                     <Edit2 className="w-4 h-4 inline" />
                                                 </button>
                                                 <button
                                                     onClick={() => openDeleteModal(facility)}
                                                     className="text-muted-foreground hover:text-destructive transition-colors"
-                                                    title="Delete facility"
+                                                    title="Delete"
                                                 >
                                                     <Trash2 className="w-4 h-4 inline" />
                                                 </button>
@@ -356,8 +355,7 @@ const FacilityManagement = () => {
             <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Facility">
                 <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingFacility?.name}</span>?
-                        This action cannot be undone.
+                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingFacility?.name}</span>? This action cannot be undone.
                     </p>
                     <div className="pt-2 flex justify-end space-x-2">
                         <button
@@ -370,10 +368,10 @@ const FacilityManagement = () => {
                         <button
                             type="button"
                             onClick={handleDeleteFacility}
-                            disabled={deleting}
+                            disabled={submitting}
                             className="px-4 py-2 text-sm font-medium bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
                         >
-                            {deleting ? 'Deleting...' : 'Delete'}
+                            {submitting ? 'Deleting...' : 'Delete Facility'}
                         </button>
                     </div>
                 </div>

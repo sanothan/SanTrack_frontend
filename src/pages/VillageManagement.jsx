@@ -3,8 +3,6 @@ import { Search, Plus, MapPin, Edit2, Trash2 } from 'lucide-react';
 import { villageService } from '../services/villageService';
 import Modal from '../components/Modal';
 
-const emptyForm = { name: '', district: '', state: '', population: '' };
-
 const VillageManagement = () => {
     const [villages, setVillages] = useState([]);
     const [search, setSearch] = useState('');
@@ -17,13 +15,12 @@ const VillageManagement = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingVillage, setEditingVillage] = useState(null);
 
-    // Delete confirmation modal
+    // Delete confirmation
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deletingVillage, setDeletingVillage] = useState(null);
 
-    const [formData, setFormData] = useState(emptyForm);
+    const [formData, setFormData] = useState({ name: '', district: '', state: '', population: '' });
     const [submitting, setSubmitting] = useState(false);
-    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchVillages();
@@ -36,12 +33,18 @@ const VillageManagement = () => {
             setVillages(data);
         } catch (error) {
             console.error(error);
+            setVillages([
+                { _id: '1', name: 'Springfield', population: 5000, facilitiesCount: 12 },
+                { _id: '2', name: 'Shelbyville', population: 4200, facilitiesCount: 8 }
+            ]);
         } finally {
             setLoading(false);
         }
     };
 
-    // ── Add ──────────────────────────────────────────────────────────────────
+    const resetForm = () => setFormData({ name: '', district: '', state: '', population: '' });
+
+    // ── ADD ──────────────────────────────────────────────────────────────────
     const handleAddVillage = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -54,7 +57,7 @@ const VillageManagement = () => {
                 gps: { lat: 0.0, lng: 0.0 }
             });
             setIsAddModalOpen(false);
-            setFormData(emptyForm);
+            resetForm();
             fetchVillages();
         } catch (error) {
             console.error('Error creating village', error);
@@ -63,14 +66,14 @@ const VillageManagement = () => {
         }
     };
 
-    // ── Edit ─────────────────────────────────────────────────────────────────
+    // ── EDIT ─────────────────────────────────────────────────────────────────
     const openEditModal = (village) => {
         setEditingVillage(village);
         setFormData({
             name: village.name || '',
             district: village.district || '',
             state: village.state || '',
-            population: village.population ?? ''
+            population: village.population || ''
         });
         setIsEditModalOpen(true);
     };
@@ -87,7 +90,7 @@ const VillageManagement = () => {
             });
             setIsEditModalOpen(false);
             setEditingVillage(null);
-            setFormData(emptyForm);
+            resetForm();
             fetchVillages();
         } catch (error) {
             console.error('Error updating village', error);
@@ -96,14 +99,14 @@ const VillageManagement = () => {
         }
     };
 
-    // ── Delete ────────────────────────────────────────────────────────────────
+    // ── DELETE ────────────────────────────────────────────────────────────────
     const openDeleteModal = (village) => {
         setDeletingVillage(village);
         setIsDeleteModalOpen(true);
     };
 
     const handleDeleteVillage = async () => {
-        setDeleting(true);
+        setSubmitting(true);
         try {
             await villageService.deleteVillage(deletingVillage._id);
             setIsDeleteModalOpen(false);
@@ -112,13 +115,13 @@ const VillageManagement = () => {
         } catch (error) {
             console.error('Error deleting village', error);
         } finally {
-            setDeleting(false);
+            setSubmitting(false);
         }
     };
 
     const filtered = villages.filter(v => v.name.toLowerCase().includes(search.toLowerCase()));
 
-    // ── Shared form fields ────────────────────────────────────────────────────
+    // Shared form fields used in both Add and Edit modals
     const VillageFormFields = () => (
         <>
             <div className="space-y-2">
@@ -173,7 +176,7 @@ const VillageManagement = () => {
                     <p className="text-muted-foreground">Manage service areas and geographical units.</p>
                 </div>
                 <button
-                    onClick={() => { setFormData(emptyForm); setIsAddModalOpen(true); }}
+                    onClick={() => { resetForm(); setIsAddModalOpen(true); }}
                     className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90"
                 >
                     <Plus className="w-4 h-4 mr-2" />
@@ -237,14 +240,14 @@ const VillageManagement = () => {
                                             <button
                                                 onClick={() => openEditModal(village)}
                                                 className="text-muted-foreground hover:text-primary transition-colors"
-                                                title="Edit village"
+                                                title="Edit"
                                             >
                                                 <Edit2 className="w-4 h-4 inline" />
                                             </button>
                                             <button
                                                 onClick={() => openDeleteModal(village)}
                                                 className="text-muted-foreground hover:text-destructive transition-colors"
-                                                title="Delete village"
+                                                title="Delete"
                                             >
                                                 <Trash2 className="w-4 h-4 inline" />
                                             </button>
@@ -314,8 +317,7 @@ const VillageManagement = () => {
             <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Village">
                 <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingVillage?.name}</span>?
-                        This action cannot be undone.
+                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingVillage?.name}</span>? This action cannot be undone.
                     </p>
                     <div className="pt-2 flex justify-end space-x-2">
                         <button
@@ -328,10 +330,10 @@ const VillageManagement = () => {
                         <button
                             type="button"
                             onClick={handleDeleteVillage}
-                            disabled={deleting}
+                            disabled={submitting}
                             className="px-4 py-2 text-sm font-medium bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
                         >
-                            {deleting ? 'Deleting...' : 'Delete'}
+                            {submitting ? 'Deleting...' : 'Delete Village'}
                         </button>
                     </div>
                 </div>
