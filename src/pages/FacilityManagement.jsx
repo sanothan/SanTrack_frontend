@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Building2, MapPin, Activity, Edit2, Trash2, X } from 'lucide-react';
+import { Search, Plus, Building2, MapPin, Activity, Edit2, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { facilityService } from '../services/facilityService';
 import { villageService } from '../services/villageService';
@@ -12,7 +12,18 @@ const FacilityManagement = () => {
     const [villages, setVillages] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+
+    // Add modal
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    // Edit modal
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingFacility, setEditingFacility] = useState(null);
+
+    // Delete confirmation
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deletingFacility, setDeletingFacility] = useState(null);
+
     const [formData, setFormData] = useState({ name: '', type: 'toilet', villageId: '', condition: 'good' });
     const [submitting, setSubmitting] = useState(false);
 
@@ -36,16 +47,67 @@ const FacilityManagement = () => {
         }
     };
 
+    const resetForm = () => setFormData({ name: '', type: 'toilet', villageId: '', condition: 'good' });
+
+    // ── ADD ──────────────────────────────────────────────────────────────────
     const handleAddFacility = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
             await facilityService.createFacility(formData);
             setIsAddModalOpen(false);
-            setFormData({ name: '', type: 'toilet', villageId: '', condition: 'good' });
+            resetForm();
             fetchData();
         } catch (error) {
             console.error(error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // ── EDIT ─────────────────────────────────────────────────────────────────
+    const openEditModal = (facility) => {
+        setEditingFacility(facility);
+        setFormData({
+            name: facility.name || '',
+            type: facility.type || 'toilet',
+            villageId: facility.villageId?._id || facility.villageId || '',
+            condition: facility.condition || 'good'
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditFacility = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            await facilityService.updateFacility(editingFacility._id, formData);
+            setIsEditModalOpen(false);
+            setEditingFacility(null);
+            resetForm();
+            fetchData();
+        } catch (error) {
+            console.error('Error updating facility', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // ── DELETE ────────────────────────────────────────────────────────────────
+    const openDeleteModal = (facility) => {
+        setDeletingFacility(facility);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteFacility = async () => {
+        setSubmitting(true);
+        try {
+            await facilityService.deleteFacility(deletingFacility._id);
+            setIsDeleteModalOpen(false);
+            setDeletingFacility(null);
+            fetchData();
+        } catch (error) {
+            console.error('Error deleting facility', error);
         } finally {
             setSubmitting(false);
         }
@@ -64,6 +126,67 @@ const FacilityManagement = () => {
 
     const formatType = (type) => type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
 
+    // Shared form fields used in both Add and Edit modals
+    const FacilityFormFields = () => (
+        <>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Facility Name <span className="text-red-500">*</span></label>
+                <input
+                    type="text"
+                    required
+                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Central Water Tank"
+                />
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Village <span className="text-red-500">*</span></label>
+                <select
+                    required
+                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    value={formData.villageId}
+                    onChange={(e) => setFormData({ ...formData, villageId: e.target.value })}
+                >
+                    <option value="" disabled>Select a village</option>
+                    {villages.map(v => (
+                        <option key={v._id} value={v._id}>{v.name} ({v.district})</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Type <span className="text-red-500">*</span></label>
+                    <select
+                        required
+                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    >
+                        <option value="toilet">Public Toilet</option>
+                        <option value="well">Community Well</option>
+                        <option value="water_tank">Water Tank</option>
+                    </select>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">Condition <span className="text-red-500">*</span></label>
+                    <select
+                        required
+                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        value={formData.condition}
+                        onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                    >
+                        <option value="good">Good</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+            </div>
+        </>
+    );
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -73,7 +196,7 @@ const FacilityManagement = () => {
                 </div>
                 {isAdmin && (
                     <button
-                        onClick={() => setIsAddModalOpen(true)}
+                        onClick={() => { resetForm(); setIsAddModalOpen(true); }}
                         className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90"
                     >
                         <Plus className="w-4 h-4 mr-2" />
@@ -151,8 +274,20 @@ const FacilityManagement = () => {
                                         </td>
                                         {isAdmin && (
                                             <td className="px-6 py-4 text-right space-x-2">
-                                                <button className="text-muted-foreground hover:text-primary transition-colors"><Edit2 className="w-4 h-4 inline" /></button>
-                                                <button className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
+                                                <button
+                                                    onClick={() => openEditModal(facility)}
+                                                    className="text-muted-foreground hover:text-primary transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <Edit2 className="w-4 h-4 inline" />
+                                                </button>
+                                                <button
+                                                    onClick={() => openDeleteModal(facility)}
+                                                    className="text-muted-foreground hover:text-destructive transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 className="w-4 h-4 inline" />
+                                                </button>
                                             </td>
                                         )}
                                     </tr>
@@ -173,62 +308,7 @@ const FacilityManagement = () => {
             {/* Add Facility Modal */}
             <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Facility">
                 <form onSubmit={handleAddFacility} className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Facility Name <span className="text-red-500">*</span></label>
-                        <input
-                            type="text"
-                            required
-                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="e.g. Central Water Tank"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Village <span className="text-red-500">*</span></label>
-                        <select
-                            required
-                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            value={formData.villageId}
-                            onChange={(e) => setFormData({ ...formData, villageId: e.target.value })}
-                        >
-                            <option value="" disabled>Select a village</option>
-                            {villages.map(v => (
-                                <option key={v._id} value={v._id}>{v.name} ({v.district})</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Type <span className="text-red-500">*</span></label>
-                            <select
-                                required
-                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                            >
-                                <option value="toilet">Public Toilet</option>
-                                <option value="well">Community Well</option>
-                                <option value="water_tank">Water Tank</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Condition <span className="text-red-500">*</span></label>
-                            <select
-                                required
-                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                value={formData.condition}
-                                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                            >
-                                <option value="good">Good</option>
-                                <option value="moderate">Moderate</option>
-                                <option value="critical">Critical</option>
-                            </select>
-                        </div>
-                    </div>
-
+                    <FacilityFormFields />
                     <div className="pt-4 flex justify-end space-x-2">
                         <button
                             type="button"
@@ -246,6 +326,55 @@ const FacilityManagement = () => {
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Edit Facility Modal */}
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Facility">
+                <form onSubmit={handleEditFacility} className="space-y-4">
+                    <FacilityFormFields />
+                    <div className="pt-4 flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        >
+                            {submitting ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Facility">
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingFacility?.name}</span>? This action cannot be undone.
+                    </p>
+                    <div className="pt-2 flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleDeleteFacility}
+                            disabled={submitting}
+                            className="px-4 py-2 text-sm font-medium bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                        >
+                            {submitting ? 'Deleting...' : 'Delete Facility'}
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

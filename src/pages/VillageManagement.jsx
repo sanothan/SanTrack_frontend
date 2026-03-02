@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, MapPin, MoreVertical, Edit2, Trash2, X } from 'lucide-react';
+import { Search, Plus, MapPin, Edit2, Trash2 } from 'lucide-react';
 import { villageService } from '../services/villageService';
 import Modal from '../components/Modal';
 
@@ -7,7 +7,18 @@ const VillageManagement = () => {
     const [villages, setVillages] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+
+    // Add modal
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    // Edit modal
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingVillage, setEditingVillage] = useState(null);
+
+    // Delete confirmation
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deletingVillage, setDeletingVillage] = useState(null);
+
     const [formData, setFormData] = useState({ name: '', district: '', state: '', population: '' });
     const [submitting, setSubmitting] = useState(false);
 
@@ -22,7 +33,6 @@ const VillageManagement = () => {
             setVillages(data);
         } catch (error) {
             console.error(error);
-            // fallback for demo
             setVillages([
                 { _id: '1', name: 'Springfield', population: 5000, facilitiesCount: 12 },
                 { _id: '2', name: 'Shelbyville', population: 4200, facilitiesCount: 8 }
@@ -32,6 +42,9 @@ const VillageManagement = () => {
         }
     };
 
+    const resetForm = () => setFormData({ name: '', district: '', state: '', population: '' });
+
+    // ── ADD ──────────────────────────────────────────────────────────────────
     const handleAddVillage = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -41,22 +54,119 @@ const VillageManagement = () => {
                 district: formData.district,
                 state: formData.state,
                 population: Number(formData.population) || 0,
-                gps: {
-                    lat: 0.0,
-                    lng: 0.0
-                }
+                gps: { lat: 0.0, lng: 0.0 }
             });
             setIsAddModalOpen(false);
-            setFormData({ name: '', district: '', state: '', population: '' });
-            fetchVillages(); // Refresh the list
+            resetForm();
+            fetchVillages();
         } catch (error) {
-            console.error("Error creating village", error);
+            console.error('Error creating village', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // ── EDIT ─────────────────────────────────────────────────────────────────
+    const openEditModal = (village) => {
+        setEditingVillage(village);
+        setFormData({
+            name: village.name || '',
+            district: village.district || '',
+            state: village.state || '',
+            population: village.population || ''
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditVillage = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            await villageService.updateVillage(editingVillage._id, {
+                name: formData.name,
+                district: formData.district,
+                state: formData.state,
+                population: Number(formData.population) || 0
+            });
+            setIsEditModalOpen(false);
+            setEditingVillage(null);
+            resetForm();
+            fetchVillages();
+        } catch (error) {
+            console.error('Error updating village', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // ── DELETE ────────────────────────────────────────────────────────────────
+    const openDeleteModal = (village) => {
+        setDeletingVillage(village);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteVillage = async () => {
+        setSubmitting(true);
+        try {
+            await villageService.deleteVillage(deletingVillage._id);
+            setIsDeleteModalOpen(false);
+            setDeletingVillage(null);
+            fetchVillages();
+        } catch (error) {
+            console.error('Error deleting village', error);
         } finally {
             setSubmitting(false);
         }
     };
 
     const filtered = villages.filter(v => v.name.toLowerCase().includes(search.toLowerCase()));
+
+    // Shared form fields used in both Add and Edit modals
+    const VillageFormFields = () => (
+        <>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Village Name <span className="text-red-500">*</span></label>
+                <input
+                    type="text"
+                    required
+                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">District <span className="text-red-500">*</span></label>
+                    <input
+                        type="text"
+                        required
+                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        value={formData.district}
+                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium">State <span className="text-red-500">*</span></label>
+                    <input
+                        type="text"
+                        required
+                        className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <label className="text-sm font-medium">Population</label>
+                <input
+                    type="number"
+                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    value={formData.population}
+                    onChange={(e) => setFormData({ ...formData, population: e.target.value })}
+                />
+            </div>
+        </>
+    );
 
     return (
         <div className="space-y-6">
@@ -66,7 +176,7 @@ const VillageManagement = () => {
                     <p className="text-muted-foreground">Manage service areas and geographical units.</p>
                 </div>
                 <button
-                    onClick={() => setIsAddModalOpen(true)}
+                    onClick={() => { resetForm(); setIsAddModalOpen(true); }}
                     className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90"
                 >
                     <Plus className="w-4 h-4 mr-2" />
@@ -127,8 +237,20 @@ const VillageManagement = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right space-x-2">
-                                            <button className="text-muted-foreground hover:text-primary transition-colors"><Edit2 className="w-4 h-4 inline" /></button>
-                                            <button className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
+                                            <button
+                                                onClick={() => openEditModal(village)}
+                                                className="text-muted-foreground hover:text-primary transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Edit2 className="w-4 h-4 inline" />
+                                            </button>
+                                            <button
+                                                onClick={() => openDeleteModal(village)}
+                                                className="text-muted-foreground hover:text-destructive transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="w-4 h-4 inline" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -148,47 +270,7 @@ const VillageManagement = () => {
             {/* Add Village Modal */}
             <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Village">
                 <form onSubmit={handleAddVillage} className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Village Name <span className="text-red-500">*</span></label>
-                        <input
-                            type="text"
-                            required
-                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">District <span className="text-red-500">*</span></label>
-                            <input
-                                type="text"
-                                required
-                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                value={formData.district}
-                                onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">State <span className="text-red-500">*</span></label>
-                            <input
-                                type="text"
-                                required
-                                className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                value={formData.state}
-                                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Population</label>
-                        <input
-                            type="number"
-                            className="flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            value={formData.population}
-                            onChange={(e) => setFormData({ ...formData, population: e.target.value })}
-                        />
-                    </div>
+                    <VillageFormFields />
                     <div className="pt-4 flex justify-end space-x-2">
                         <button
                             type="button"
@@ -206,6 +288,55 @@ const VillageManagement = () => {
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Edit Village Modal */}
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Village">
+                <form onSubmit={handleEditVillage} className="space-y-4">
+                    <VillageFormFields />
+                    <div className="pt-4 flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        >
+                            {submitting ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Delete Village">
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Are you sure you want to delete <span className="font-semibold text-foreground">{deletingVillage?.name}</span>? This action cannot be undone.
+                    </p>
+                    <div className="pt-2 flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleDeleteVillage}
+                            disabled={submitting}
+                            className="px-4 py-2 text-sm font-medium bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                        >
+                            {submitting ? 'Deleting...' : 'Delete Village'}
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );
