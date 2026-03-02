@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 import { Droplet, Lock, Mail, User, Phone } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Signup = () => {
     const [formData, setFormData] = useState({
@@ -14,6 +16,7 @@ const Signup = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { googleLogin } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -45,6 +48,25 @@ const Signup = () => {
             navigate('/login', { state: { message: 'Registration successful! Please sign in.' } });
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setError('');
+        setLoading(true);
+        try {
+            const data = await googleLogin(credentialResponse.credential);
+            if (data?.user?.role === 'admin') {
+                navigate('/admin');
+            } else if (data?.user?.role === 'inspector') {
+                navigate('/inspector');
+            } else {
+                navigate('/');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Google sign-up failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -186,6 +208,26 @@ const Signup = () => {
 
                     <div className="mt-6 text-center text-sm text-muted-foreground">
                         Already have an account? <Link to="/login" className="text-primary hover:underline font-medium">Sign in instead</Link>
+                    </div>
+
+                    {/* Google OAuth Divider */}
+                    <div className="mt-6 flex items-center gap-3">
+                        <div className="flex-1 h-px bg-border" />
+                        <span className="text-xs text-muted-foreground">or sign up with</span>
+                        <div className="flex-1 h-px bg-border" />
+                    </div>
+
+                    {/* Google Sign-Up Button */}
+                    <div className="mt-4 flex justify-center">
+                        <GoogleLogin
+                            onSuccess={handleGoogleSuccess}
+                            onError={() => setError('Google sign-up was unsuccessful. Please try again.')}
+                            useOneTap={false}
+                            size="large"
+                            width="100%"
+                            text="signup_with"
+                            shape="rectangular"
+                        />
                     </div>
                 </div>
             </div>

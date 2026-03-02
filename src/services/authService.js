@@ -15,5 +15,11 @@ export const authService = {
     getProfile: async () => {
         const response = await api.get('/auth/profile');
         return response.data;
-    }
+    },
+
+    // Logs in (or registers) a user via Google OAuth
+    googleLogin: async (credential) => {
+        const response = await api.post('/auth/google', { credential });
+        return response.data;
+    },
 };
