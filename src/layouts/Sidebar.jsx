@@ -21,7 +21,7 @@ const Sidebar = ({ isOpen, setOpen }) => {
         { name: 'Users', path: `/${role}/users`, icon: Users, roles: ['admin'] },
         { name: 'Villages', path: `/${role}/villages`, icon: MapPin, roles: ['admin'] },
         { name: 'Facilities', path: `/${role}/facilities`, icon: Building2, roles: ['admin', 'inspector', 'community'] },
-        { name: 'Inspections', path: `/${role}/inspections`, icon: ClipboardCheck, roles: ['admin', 'inspector'] },
+        { name: 'Inspections', path: `/${role}/inspections`, icon: ClipboardCheck, roles: ['inspector'] },
         { name: 'Issues', path: `/${role}/issues`, icon: AlertTriangle, roles: ['admin', 'inspector', 'community'] },
     ];
 

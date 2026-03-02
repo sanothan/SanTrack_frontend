@@ -50,7 +50,6 @@ function App() {
               <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/admin/villages" element={<VillageManagement />} />
               <Route path="/admin/facilities" element={<FacilityManagement />} />
-              <Route path="/admin/inspections" element={<InspectionManagement />} />
               <Route path="/admin/issues" element={<IssueTracking />} />
             </Route>
 
