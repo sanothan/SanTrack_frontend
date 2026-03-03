@@ -19,5 +19,10 @@ export const inspectionService = {
     updateInspection: async (id, data) => {
         const response = await api.put(`/inspections/${id}`, data);
         return response.data;
+    },
+
+    deleteInspection: async (id) => {
+        const response = await api.delete(`/inspections/${id}`);
+        return response.data;
     }
 };
