@@ -58,6 +58,17 @@ const Signup = () => {
         setLoading(true);
         try {
             const data = await googleLogin(credentialResponse.credential);
+
+            // Block sign-up if the Google email already has an account
+            if (!data.isNewUser) {
+                setError('An account with this Google email already exists. Please sign in instead.');
+                // Remove just-stored session so user is not silently logged in
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setLoading(false);
+                return;
+            }
+
             if (data?.user?.role === 'admin') {
                 navigate('/admin');
             } else if (data?.user?.role === 'inspector') {

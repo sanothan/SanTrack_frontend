@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Droplet, Lock, Mail } from 'lucide-react';
+import { Droplet, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login, googleLogin } = useAuth();
@@ -101,12 +102,24 @@ const Login = () => {
                                     <Lock className="w-4 h-4" />
                                 </div>
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                                     placeholder="••••••••"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-4 h-4" />
+                                    ) : (
+                                        <Eye className="w-4 h-4" />
+                                    )}
+                                </button>
                             </div>
                         </div>
 
@@ -141,14 +154,12 @@ const Login = () => {
                         </div>
                     </div>
 
-                    {/* Google OAuth Divider */}
                     <div className="mt-6 flex items-center gap-3">
                         <div className="flex-1 h-px bg-border" />
                         <span className="text-xs text-muted-foreground">or continue with</span>
                         <div className="flex-1 h-px bg-border" />
                     </div>
 
-                    {/* Google Login Button */}
                     <div className="mt-4 flex justify-center">
                         <GoogleLogin
                             onSuccess={handleGoogleSuccess}
