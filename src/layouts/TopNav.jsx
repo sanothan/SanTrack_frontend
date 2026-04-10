@@ -13,7 +13,7 @@ const TopNav = ({ toggleSidebar }) => {
     };
 
     return (
-        <header className="h-16 bg-card border-b flex items-center justify-between px-4 sm:px-6 lg:px-8 shadow-sm">
+        <header className="h-16 bg-card/90 backdrop-blur border-b flex items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="flex items-center">
                 <button
                     onClick={toggleSidebar}
@@ -24,8 +24,8 @@ const TopNav = ({ toggleSidebar }) => {
             </div>
 
             <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-sm">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <div className="flex items-center space-x-2 text-sm bg-muted/60 border rounded-md px-2.5 py-1.5">
+                    <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center text-primary">
                         <User className="h-4 w-4" />
                     </div>
                     <span className="hidden sm:inline-block font-medium">

@@ -59,9 +59,9 @@ const Login = () => {
 
     return (
         <div className="flex-1 flex items-center justify-center bg-muted/40 p-8 sm:p-4">
-            <div className="w-full max-w-md bg-card rounded-xl shadow-lg border overflow-hidden">
-                <div className="p-8 text-center bg-primary/5 border-b">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+            <div className="w-full max-w-md bg-card rounded-xl shadow-sm border overflow-hidden">
+                <div className="p-8 text-center bg-muted/40 border-b">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-md bg-primary/10 text-primary mb-4">
                         <Droplet className="w-8 h-8" />
                     </div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">SanTrack</h1>
@@ -148,9 +148,6 @@ const Login = () => {
                     <div className="mt-6 text-center text-sm text-muted-foreground flex flex-col space-y-2">
                         <div>
                             Don't have an account? <Link to="/register" className="text-primary hover:underline font-medium">Sign up</Link>
-                        </div>
-                        <div>
-                            <Link to="/report" className="text-primary hover:underline font-medium">Return to Public Report Page</Link>
                         </div>
                     </div>
 

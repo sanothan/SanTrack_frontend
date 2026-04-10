@@ -4,9 +4,9 @@ import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 const PublicContact = () => {
     return (
         <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8">
-            <div className="bg-card border shadow-lg rounded-2xl overflow-hidden mt-4 md:mt-8">
+            <div className="bg-card border shadow-sm rounded-xl overflow-hidden mt-4 md:mt-8">
                 {/* Header Block */}
-                <div className="bg-primary/5 border-b p-8 md:p-12 text-center">
+                <div className="bg-muted/40 border-b p-8 md:p-12 text-center">
                     <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">Contact Us</h1>
                     <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
                         We're here to help. Reach out to the SanTrack administrative team for inquiries, partnership opportunities, or support.
@@ -25,7 +25,7 @@ const PublicContact = () => {
 
                         <div className="space-y-6">
                             <div className="flex items-start space-x-4">
-                                <div className="p-3 bg-primary/10 text-primary rounded-full shrink-0">
+                                <div className="p-3 bg-primary/10 text-primary rounded-md shrink-0">
                                     <MapPin className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -39,7 +39,7 @@ const PublicContact = () => {
                             </div>
 
                             <div className="flex items-start space-x-4">
-                                <div className="p-3 bg-primary/10 text-primary rounded-full shrink-0">
+                                <div className="p-3 bg-primary/10 text-primary rounded-md shrink-0">
                                     <Phone className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -52,7 +52,7 @@ const PublicContact = () => {
                             </div>
 
                             <div className="flex items-start space-x-4">
-                                <div className="p-3 bg-primary/10 text-primary rounded-full shrink-0">
+                                <div className="p-3 bg-primary/10 text-primary rounded-md shrink-0">
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -65,7 +65,7 @@ const PublicContact = () => {
                             </div>
 
                             <div className="flex items-start space-x-4">
-                                <div className="p-3 bg-primary/10 text-primary rounded-full shrink-0">
+                                <div className="p-3 bg-primary/10 text-primary rounded-md shrink-0">
                                     <Clock className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -98,7 +98,7 @@ const PublicContact = () => {
                 {/* Small CTA */}
                 <div className="p-8 text-center bg-card">
                     <p className="text-muted-foreground font-medium">Looking to report a sanitation issue affecting your area?</p>
-                    <a href="/report" className="inline-block mt-4 px-6 py-2 bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/90 transition-colors">
+                    <a href="/report" className="inline-block mt-4 px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-md hover:bg-primary/90 transition-colors">
                         Go to Report Platform
                     </a>
                 </div>

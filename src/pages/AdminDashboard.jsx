@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { dashboardService } from '../services/dashboardService';
+import { useAuth } from '../context/AuthContext';
 
 const StatCard = ({ title, value, icon: Icon, color, link }) => (
     <div className="bg-card rounded-xl border shadow-sm p-6 flex flex-col">
@@ -30,6 +31,7 @@ const StatCard = ({ title, value, icon: Icon, color, link }) => (
 );
 
 const AdminDashboard = () => {
+    const { user } = useAuth();
     const [stats, setStats] = useState({
         villages: 0,
         facilities: 0,
@@ -58,8 +60,10 @@ const AdminDashboard = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Admin Overview</h1>
-                    <p className="text-muted-foreground">Monitor system-wide sanitation metrics and operations.</p>
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Welcome, {user?.name || 'Admin'}!</h1>
+                    <p className="text-muted-foreground">
+                        Admin Overview: monitor system-wide sanitation metrics and operations.
+                    </p>
                 </div>
                 <div className="flex space-x-2">
                     <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90">

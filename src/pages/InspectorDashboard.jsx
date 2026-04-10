@@ -16,8 +16,8 @@ const InspectorDashboard = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Inspector Portal</h1>
-                    <p className="text-muted-foreground">Welcome back, {user?.name || 'Inspector'}. Here are your pending tasks.</p>
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Welcome, {user?.name || 'Inspector'}!</h1>
+                    <p className="text-muted-foreground">Inspector Portal: here are your pending tasks.</p>
                 </div>
                 <div className="flex space-x-2">
                     <Link to="/inspector/inspections/new" className="bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium text-sm flex items-center hover:bg-primary/90">

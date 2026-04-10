@@ -17,15 +17,15 @@ const PublicLayout = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-muted/20 flex flex-col">
-            <header className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
+        <div className="min-h-screen bg-background flex flex-col">
+            <header className="bg-card/95 backdrop-blur border-b sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 rounded bg-white text-primary flex items-center justify-center font-bold text-xl">
+                            <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
                                 <Droplet className="w-5 h-5" />
                             </div>
-                            <Link to="/" className="text-xl font-bold tracking-tight text-white hover:text-white/90">
+                            <Link to="/" className="text-xl font-bold tracking-tight text-foreground hover:text-primary transition-colors">
                                 SanTrack
                             </Link>
                         </div>
@@ -37,8 +37,8 @@ const PublicLayout = () => {
                                     key={link.path}
                                     to={link.path}
                                     className={cn(
-                                        "text-sm font-medium transition-colors hover:text-white/80",
-                                        location.pathname === link.path ? "text-white border-b-2 border-white pb-1" : "text-primary-foreground/80"
+                                        "text-sm font-medium transition-colors pb-1 border-b-2 border-transparent",
+                                        location.pathname === link.path ? "text-primary border-primary" : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
                                     {link.title}
@@ -51,26 +51,34 @@ const PublicLayout = () => {
                                 <div className="flex items-center space-x-3">
                                     <Link
                                         to="/profile"
-                                        className="flex items-center text-sm font-medium hover:text-white/80 transition-colors"
+                                        className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                                     >
                                         <User className="w-4 h-4 mr-1" />
                                         Profile
                                     </Link>
                                     <button
                                         onClick={logout}
-                                        className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors border border-white/20 flex items-center"
+                                        className="bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-md text-sm font-medium transition-colors border border-border flex items-center"
                                     >
                                         <LogOut className="w-4 h-4 mr-1" />
                                         Logout
                                     </button>
                                 </div>
                             ) : (
-                                <Link
-                                    to="/login"
-                                    className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors border border-white/20"
-                                >
-                                    Login
-                                </Link>
+                                <>
+                                    <Link
+                                        to="/register"
+                                        className="bg-card hover:bg-muted text-foreground px-4 py-2 rounded-md text-sm font-medium transition-colors border border-border"
+                                    >
+                                        Sign Up
+                                    </Link>
+                                    <Link
+                                        to="/login"
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                                    >
+                                        Login
+                                    </Link>
+                                </>
                             )}
                         </div>
 
@@ -78,7 +86,7 @@ const PublicLayout = () => {
                         <div className="md:hidden flex items-center">
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="text-white hover:text-white/80 focus:outline-none"
+                                className="text-foreground hover:text-primary focus:outline-none"
                             >
                                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                             </button>
@@ -88,7 +96,7 @@ const PublicLayout = () => {
 
                 {/* Mobile Navigation */}
                 {isMenuOpen && (
-                    <div className="md:hidden bg-primary pb-4 px-4 space-y-2 border-t border-primary-foreground/10 pt-2">
+                    <div className="md:hidden bg-card pb-4 px-4 space-y-2 border-t pt-2">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.path}
@@ -96,16 +104,23 @@ const PublicLayout = () => {
                                 onClick={() => setIsMenuOpen(false)}
                                 className={cn(
                                     "block px-3 py-2 rounded-md text-base font-medium",
-                                    location.pathname === link.path ? "bg-white/10 text-white" : "text-primary-foreground/80 hover:bg-white/5"
+                                    location.pathname === link.path ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                 )}
                             >
                                 {link.title}
                             </Link>
                         ))}
                         <Link
+                            to="/register"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block px-3 py-2 mt-4 rounded-md text-base font-medium bg-muted text-foreground border border-border text-center"
+                        >
+                            Sign Up
+                        </Link>
+                        <Link
                             to="/login"
                             onClick={() => setIsMenuOpen(false)}
-                            className="block px-3 py-2 mt-4 rounded-md text-base font-medium bg-white/10 text-white border border-white/20 text-center"
+                            className="block px-3 py-2 rounded-md text-base font-medium bg-primary text-primary-foreground text-center"
                         >
                             Login
                         </Link>
@@ -117,20 +132,20 @@ const PublicLayout = () => {
                 <Outlet />
             </main>
 
-            <footer className="bg-slate-900 text-slate-300 py-8 border-t border-slate-800">
+            <footer className="bg-card text-muted-foreground py-8 border-t">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div>
                             <div className="flex items-center space-x-2 mb-4">
                                 <Droplet className="w-5 h-5 text-primary" />
-                                <span className="text-lg font-bold text-white">SanTrack</span>
+                                <span className="text-lg font-bold text-foreground">SanTrack</span>
                             </div>
-                            <p className="text-sm text-slate-400">
+                            <p className="text-sm text-muted-foreground">
                                 Digital sanitation monitoring system empowering rural communities through transparent issue tracking and facility management.
                             </p>
                         </div>
                         <div>
-                            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Quick Links</h3>
+                            <h3 className="text-sm font-semibold text-foreground tracking-wider uppercase mb-4">Quick Links</h3>
                             <ul className="space-y-2 text-sm">
                                 <li><Link to="/" className="hover:text-primary transition-colors">Home</Link></li>
                                 <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
@@ -139,15 +154,15 @@ const PublicLayout = () => {
                             </ul>
                         </div>
                         <div>
-                            <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Contact</h3>
-                            <ul className="space-y-2 text-sm text-slate-400">
+                            <h3 className="text-sm font-semibold text-foreground tracking-wider uppercase mb-4">Contact</h3>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
                                 <li>support@santrack.org</li>
                                 <li>+1 (555) 123-4567</li>
                             </ul>
                         </div>
                     </div>
-                    <div className="mt-8 border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                        <p className="text-sm text-slate-400">&copy; {new Date().getFullYear()} SanTrack Public Sanitation Monitoring. All rights reserved.</p>
+                    <div className="mt-8 border-t pt-8 flex flex-col md:flex-row justify-between items-center">
+                        <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} SanTrack Public Sanitation Monitoring. All rights reserved.</p>
                     </div>
                 </div>
             </footer>

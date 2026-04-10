@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Save, XCircle, AlertTriangle, Building2, User, Phone, CheckCircle } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { AlertTriangle, Building2, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { facilityService } from '../services/facilityService';
 import { issueService } from '../services/issueService';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,6 @@ import { villageService } from '../services/villageService';
 
 const PublicReport = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [facilities, setFacilities] = useState([]);
     const [villages, setVillages] = useState([]);
     const [selectedVillageId, setSelectedVillageId] = useState('');
@@ -81,8 +80,8 @@ const PublicReport = () => {
     if (!user) {
         return (
             <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8 flex items-center justify-center">
-                <div className="bg-card border shadow-lg rounded-2xl p-8 text-center max-w-md">
-                    <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                <div className="bg-card border shadow-sm rounded-xl p-8 text-center max-w-md">
+                    <AlertTriangle className="w-12 h-12 text-primary mx-auto mb-4" />
                     <h1 className="text-2xl font-bold mb-2">Authentication Required</h1>
                     <p className="text-muted-foreground mb-6">
                         To maintain accountability and track the progress of your reports, you must be logged in to submit a sanitation issue.
@@ -105,9 +104,9 @@ const PublicReport = () => {
 
     return (
         <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-8">
-            <div className="bg-card border shadow-lg rounded-2xl overflow-hidden mt-4 md:mt-8">
-                <div className="bg-blue-50 border-b border-blue-100 p-6 md:p-8 dark:bg-blue-950/20 dark:border-blue-900/30">
-                    <AlertTriangle className="w-12 h-12 text-blue-600 mb-4 dark:text-blue-400" />
+            <div className="bg-card border shadow-sm rounded-xl overflow-hidden mt-4 md:mt-8">
+                <div className="bg-muted/40 border-b p-6 md:p-8">
+                    <AlertTriangle className="w-12 h-12 text-primary mb-4" />
                     <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Report a Sanitation Issue</h1>
                     <p className="text-muted-foreground text-lg">
                         Help us keep our community clean and safe. Report broken facilities, leaks, or hygiene concerns directly to the tracking system.
@@ -116,7 +115,7 @@ const PublicReport = () => {
 
                 <div className="p-6 md:p-8">
                     {success && (
-                        <div className="mb-6 p-4 flex items-center bg-green-50 text-green-700 border border-green-200 rounded-lg dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+                        <div className="mb-6 p-4 flex items-center bg-secondary text-secondary-foreground border rounded-md">
                             <CheckCircle className="w-6 h-6 mr-3 flex-shrink-0" />
                             <div>
                                 <h4 className="font-bold">Thank you!</h4>
@@ -126,7 +125,7 @@ const PublicReport = () => {
                     )}
 
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm">
+                        <div className="mb-6 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-md text-sm">
                             {error}
                         </div>
                     )}
@@ -196,15 +195,13 @@ const PublicReport = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors shadow-md disabled:opacity-70 flex items-center justify-center"
+                                className="w-full h-12 bg-primary text-primary-foreground rounded-md font-semibold text-lg hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-70 flex items-center justify-center"
                             >
                                 {loading ? 'Submitting Report...' : 'Submit Report'}
                             </button>
                         </div>
                     </form>
                 </div>
-
-                <button>Delete</button>
             </div>
         </main>
     );

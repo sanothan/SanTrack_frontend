@@ -42,8 +42,8 @@ const Sidebar = ({ isOpen, setOpen }) => {
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="h-full flex flex-col">
-                    <div className="h-16 flex items-center px-6 border-b">
-                        <span className="text-xl font-bold text-primary">SanTrack</span>
+                    <div className="h-16 flex items-center px-6 border-b bg-muted/30">
+                        <span className="text-lg font-bold text-foreground tracking-tight">SanTrack Console</span>
                     </div>
 
                     <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
@@ -54,7 +54,7 @@ const Sidebar = ({ isOpen, setOpen }) => {
                                 className={({ isActive }) => cn(
                                     "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
                                     isActive
-                                        ? "bg-primary text-primary-foreground"
+                                        ? "bg-primary/10 text-primary border border-primary/20"
                                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                 )}
                             >
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, setOpen }) => {
                             className={({ isActive }) => cn(
                                 "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
                                 isActive
-                                    ? "bg-primary text-primary-foreground"
+                                    ? "bg-primary/10 text-primary border border-primary/20"
                                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                             )}
                         >
