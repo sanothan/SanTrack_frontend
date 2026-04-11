@@ -24,5 +24,10 @@ export const villageService = {
     deleteVillage: async (id) => {
         const response = await api.delete(`/villages/${id}`);
         return response.data;
+    },
+
+    reverseGeocode: async (lat, lng) => {
+        const response = await api.get('/villages/reverse-geocode', { params: { lat, lng } });
+        return response.data;
     }
 };

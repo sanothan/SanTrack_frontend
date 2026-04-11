@@ -84,9 +84,16 @@ const IssueTracking = () => {
                                         <select
                                             value={issue.status}
                                             onChange={(e) => {
-                                                issueService.updateIssue(issue._id, { status: e.target.value })
-                                                    .then(() => fetchIssues())
-                                                    .catch(err => console.error(err));
+                                                const newStatus = e.target.value;
+                                                issueService.updateIssue(issue._id, { status: newStatus })
+                                                    .then(() => {
+                                                        fetchIssues();
+                                                        alert(`Status updated to ${newStatus}. Notification email sent to reporter.`);
+                                                    })
+                                                    .catch(err => {
+                                                        console.error(err);
+                                                        alert("Failed to update status.");
+                                                    });
                                             }}
                                             className="text-sm border rounded-md px-2 py-1 bg-background focus:outline-none focus:ring-1 focus:ring-primary"
                                         >

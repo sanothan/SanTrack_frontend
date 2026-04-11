@@ -1,12 +1,12 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-md' }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-card w-full max-w-md rounded-xl shadow-lg border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
+            <div className={`bg-card w-full ${maxWidth} rounded-xl shadow-lg border my-4`}>
                 <div className="flex items-center justify-between p-4 border-b">
                     <h2 className="text-lg font-semibold">{title}</h2>
                     <button
