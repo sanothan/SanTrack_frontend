@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
-import { Droplet, Lock, Mail, User, Phone } from 'lucide-react';
+import { Droplet, Lock, Mail, User, Phone, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { GoogleLogin } from '@react-oauth/google';
 
@@ -16,6 +16,8 @@ const Signup = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { googleLogin } = useAuth();
     const navigate = useNavigate();
 
@@ -58,6 +60,17 @@ const Signup = () => {
         setLoading(true);
         try {
             const data = await googleLogin(credentialResponse.credential);
+
+            // Block sign-up if the Google email already has an account
+            if (!data.isNewUser) {
+                setError('An account with this Google email already exists. Please sign in instead.');
+                // Remove just-stored session so user is not silently logged in
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setLoading(false);
+                return;
+            }
+
             if (data?.user?.role === 'admin') {
                 navigate('/admin');
             } else if (data?.user?.role === 'inspector') {
@@ -73,14 +86,14 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4 py-12">
-            <div className="w-full max-w-md bg-card rounded-xl shadow-lg border overflow-hidden">
-                <div className="p-8 text-center bg-primary/5 border-b">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+        <div className="flex-1 flex items-center justify-center bg-muted/40 p-8 sm:p-4">
+            <div className="w-full max-w-md bg-card rounded-xl shadow-sm border overflow-hidden">
+                <div className="p-8 text-center bg-muted/40 border-b">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-md bg-primary/10 text-primary mb-4">
                         <Droplet className="w-8 h-8" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Create an Account</h1>
-                    <p className="text-sm text-muted-foreground mt-2">Join the SanTrack community</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your SanTrack account</h1>
+                    <p className="text-sm text-muted-foreground mt-2">Join the community sanitation monitoring network</p>
                 </div>
 
                 <div className="p-8">
@@ -104,7 +117,7 @@ const Signup = () => {
                                     value={formData.name}
                                     onChange={handleChange}
                                     className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                                    placeholder="John Doe"
+                                    placeholder="Kasun Perera"
                                 />
                             </div>
                         </div>
@@ -122,7 +135,7 @@ const Signup = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                                    placeholder="name@example.com"
+                                    placeholder="nimal.perera@gmail.com"
                                 />
                             </div>
                         </div>
@@ -142,7 +155,7 @@ const Signup = () => {
                                     value={formData.phone}
                                     onChange={handleChange}
                                     className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                                    placeholder="+1 (555) 000-0000"
+                                    placeholder="+94 77 123 4567"
                                 />
                             </div>
                         </div>
@@ -154,15 +167,23 @@ const Signup = () => {
                                     <Lock className="w-4 h-4" />
                                 </div>
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     name="password"
                                     required
                                     minLength={6}
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                                     placeholder="Create a strong password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
                             </div>
                         </div>
 
@@ -173,14 +194,22 @@ const Signup = () => {
                                     <Lock className="w-4 h-4" />
                                 </div>
                                 <input
-                                    type="password"
+                                    type={showConfirmPassword ? 'text' : 'password'}
                                     name="confirmPassword"
                                     required
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                                    className="flex h-10 w-full rounded-md border bg-background px-3 py-2 pl-9 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                                     placeholder="Confirm your password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
                             </div>
                         </div>
 
@@ -206,8 +235,10 @@ const Signup = () => {
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center text-sm text-muted-foreground">
-                        Already have an account? <Link to="/login" className="text-primary hover:underline font-medium">Sign in instead</Link>
+                    <div className="mt-6 text-center text-sm text-muted-foreground flex flex-col space-y-2">
+                        <div>
+                            Already have an account? <Link to="/login" className="text-primary hover:underline font-medium">Sign in</Link>
+                        </div>
                     </div>
 
                     {/* Google OAuth Divider */}

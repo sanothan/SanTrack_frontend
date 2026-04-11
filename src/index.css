@@ -35,26 +35,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 194 37% 97%;
+    --foreground: 200 44% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 200 44% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --popover-foreground: 200 44% 14%;
+    --primary: 191 74% 33%;
+    --primary-foreground: 186 100% 97%;
+    --secondary: 189 34% 91%;
+    --secondary-foreground: 198 38% 22%;
+    --muted: 192 31% 93%;
+    --muted-foreground: 199 18% 38%;
+    --accent: 30 93% 56%;
+    --accent-foreground: 24 35% 16%;
+    --destructive: 0 72% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 193 28% 84%;
+    --input: 193 28% 84%;
+    --ring: 191 74% 33%;
+    --radius: 0.75rem;
   }
 }
 
@@ -65,6 +65,30 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image:
+      radial-gradient(circle at 0% 0%, hsla(191, 74%, 33%, 0.1), transparent 40%),
+      radial-gradient(circle at 100% 20%, hsla(30, 93%, 56%, 0.1), transparent 35%),
+      linear-gradient(180deg, hsla(194, 37%, 99%, 1) 0%, hsla(194, 37%, 96%, 1) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Sora', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
   }
 }
 
