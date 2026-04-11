@@ -8,7 +8,8 @@ import {
     ClipboardCheck,
     AlertTriangle,
     Settings,
-    Users
+    Users,
+    Calendar
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
@@ -22,6 +23,7 @@ const Sidebar = ({ isOpen, setOpen }) => {
         { name: 'Villages', path: `/${role}/villages`, icon: MapPin, roles: ['admin'] },
         { name: 'Facilities', path: `/${role}/facilities`, icon: Building2, roles: ['admin', 'inspector', 'community'] },
         { name: 'Inspections', path: `/${role}/inspections`, icon: ClipboardCheck, roles: ['inspector'] },
+        { name: 'Schedule', path: `/${role}/schedule`, icon: Calendar, roles: ['inspector'] },
         { name: 'Issues', path: `/${role}/issues`, icon: AlertTriangle, roles: ['admin', 'inspector', 'community'] },
     ];
 
