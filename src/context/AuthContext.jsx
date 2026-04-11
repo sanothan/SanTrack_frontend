@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import api from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -9,24 +8,22 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for stored token and fetch profile
+        // Check for stored token and hydrate user from canonical backend profile
         const initAuth = async () => {
             const storedToken = localStorage.getItem('token');
             if (storedToken) {
                 try {
-                    // If we have an endpoint to get the user from token, do that here.
-                    // For now, we will just parse it out of local storage or use token info
-                    // Assuming user data is also stored stringified in localStorage on login
+                    const userData = await authService.getProfile();
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    setUser(userData);
+                } catch (error) {
                     const storedUser = localStorage.getItem('user');
                     if (storedUser) {
                         setUser(JSON.parse(storedUser));
                     } else {
-                        const userData = await authService.getProfile();
-                        setUser(userData);
+                        console.error("Auth init failed:", error);
+                        logout();
                     }
-                } catch (error) {
-                    console.error("Auth init failed:", error);
-                    logout();
                 }
             }
             setLoading(false);
@@ -39,16 +36,28 @@ export const AuthProvider = ({ children }) => {
         const data = await authService.login(email, password);
         // Assumes response contains { token, user: { id, name, role... } }
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
+        try {
+            const fullProfile = await authService.getProfile();
+            localStorage.setItem('user', JSON.stringify(fullProfile));
+            setUser(fullProfile);
+        } catch (_error) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+        }
         return data;
     };
 
     const googleLogin = async (credential) => {
         const data = await authService.googleLogin(credential);
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
+        try {
+            const fullProfile = await authService.getProfile();
+            localStorage.setItem('user', JSON.stringify(fullProfile));
+            setUser(fullProfile);
+        } catch (_error) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUser(data.user);
+        }
         return data;
     };
 
