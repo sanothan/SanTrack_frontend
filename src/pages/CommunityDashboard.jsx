@@ -3,8 +3,11 @@ import { Activity, Building2, ShieldCheck, AlertTriangle, Eye } from 'lucide-rea
 import { issueService } from '../services/issueService';
 import { dashboardService } from '../services/dashboardService';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { cn } from '../utils/cn';
 
 const CommunityDashboard = () => {
+    const { user } = useAuth();
     const [stats, setStats] = useState({ activeFacilities: 0, hygieneScore: 0, openIssues: 0 });
     const [recentIssues, setRecentIssues] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,8 +41,10 @@ const CommunityDashboard = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight">Community Dashboard</h1>
-                <p className="text-muted-foreground">Track the sanitation and hygiene status of your local facilities.</p>
+                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Welcome, {user?.name || 'Community Member'}!</h1>
+                <p className="text-muted-foreground">
+                    Community Dashboard: track the sanitation and hygiene status of your local facilities.
+                </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3 break-words">

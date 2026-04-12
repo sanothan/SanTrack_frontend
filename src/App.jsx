@@ -19,6 +19,7 @@ import UserManagement from './pages/UserManagement';
 import FacilityManagement from './pages/FacilityManagement';
 import InspectionManagement from './pages/InspectionManagement';
 import InspectionForm from './pages/InspectionForm';
+import TacticalScheduler from './pages/TacticalScheduler';
 import IssueTracking from './pages/IssueTracking';
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
               <Route path="/inspector/facilities" element={<FacilityManagement />} />
               <Route path="/inspector/inspections" element={<InspectionManagement />} />
               <Route path="/inspector/inspections/new" element={<InspectionForm />} />
+              <Route path="/inspector/schedule" element={<TacticalScheduler />} />
               <Route path="/inspector/issues" element={<IssueTracking />} />
             </Route>
 
