@@ -1,16 +1,9 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const TopNav = ({ toggleSidebar }) => {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
-
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    const { user } = useAuth();
 
     return (
         <header className="h-16 bg-card/90 backdrop-blur border-b flex items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -33,13 +26,6 @@ const TopNav = ({ toggleSidebar }) => {
                     </span>
                 </div>
 
-                <button
-                    onClick={handleLogout}
-                    className="p-2 text-muted-foreground hover:text-destructive transition-colors rounded-md"
-                    title="Logout"
-                >
-                    <LogOut className="h-5 w-5" />
-                </button>
             </div>
         </header>
     );
