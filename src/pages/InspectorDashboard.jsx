@@ -6,7 +6,6 @@ import {
     CalendarCheck,
     LayoutDashboard,
     ArrowRight,
-    Search,
     History,
     Zap,
     Clock,
@@ -17,6 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { scheduleService } from '../services/scheduleService';
+import { inspectionService } from '../services/inspectionService';
 
 const StatCell = ({ icon: Icon, label, value, color, trend }) => (
     <div className="glass-effect border rounded-[2.5rem] p-8 space-y-4 group hover:scale-[1.02] transition-all duration-500 border-white/40 shadow-2xl shadow-primary/5 relative overflow-hidden">
@@ -42,21 +42,54 @@ const InspectorDashboard = () => {
     const { user } = useAuth();
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [syncHistory, setSyncHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSchedules = async () => {
+        const fetchDashboardData = async () => {
+            setLoading(true);
+            setHistoryLoading(true);
             try {
-                const res = await scheduleService.getSchedules();
-                // Filter for upcoming/pending only
-                setSchedules(res.filter(s => s.status === 'pending').slice(0, 3));
+                const [schedulesResult, historyResult] = await Promise.allSettled([
+                    scheduleService.getSchedules(),
+                    inspectionService.getSyncHistory({ limit: 5 })
+                ]);
+
+                if (schedulesResult.status === 'fulfilled') {
+                    setSchedules(schedulesResult.value.filter(s => s.status === 'pending').slice(0, 3));
+                } else {
+                    setSchedules([]);
+                    console.error(schedulesResult.reason);
+                }
+
+                if (historyResult.status === 'fulfilled') {
+                    setSyncHistory(historyResult.value.items || []);
+                } else {
+                    setSyncHistory([]);
+                    console.error(historyResult.reason);
+                }
             } catch (err) {
                 console.error(err);
             } finally {
                 setLoading(false);
+                setHistoryLoading(false);
             }
         };
-        fetchSchedules();
+
+        fetchDashboardData();
     }, []);
+
+    const statusTone = (status) => {
+        if (status === 'critical') return 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+        if (status === 'needs_attention') return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+        return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
+    };
+
+    const issueTone = (status) => {
+        if (status === 'resolved') return 'text-emerald-500';
+        if (status === 'in_progress') return 'text-amber-500';
+        return 'text-rose-500';
+    };
 
     return (
         <div className="space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -170,16 +203,68 @@ const InspectorDashboard = () => {
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
-                    <div className="p-12 text-center space-y-6">
-                        <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500/30">
-                            <Search className="w-10 h-10" />
-                        </div>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60 italic">
-                            Operational history clear for this node.
-                        </p>
-                        <Link to="/inspector/inspections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:gap-4 transition-all pb-1 border-b-2 border-primary/20">
-                            Access Global Archives
-                        </Link>
+                    <div className="p-8 space-y-3">
+                        {historyLoading ? (
+                            <div className="py-10 flex justify-center">
+                                <Loader2 className="animate-spin opacity-30" />
+                            </div>
+                        ) : syncHistory.length > 0 ? (
+                            syncHistory.map((item) => (
+                                <div key={item.inspection._id} className="rounded-2xl border border-white/20 bg-white/5 p-4 space-y-2.5">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="text-xs font-black uppercase tracking-wider leading-tight">
+                                                {item.inspection.facilityId?.name || 'Facility'}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-70">
+                                                {new Date(item.inspection.date || item.inspection.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${statusTone(item.inspection.status)}`}>
+                                            {item.inspection.status?.replace('_', ' ') || 'good'}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold">
+                                        <span className="text-muted-foreground">Score</span>
+                                        <span className="text-primary">{item.inspection.score}/10</span>
+                                    </div>
+
+                                    {item.followUp?.issue && (
+                                        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                                            <span className="text-muted-foreground">Issue</span>
+                                            <span className={issueTone(item.followUp.issue.status)}>{item.followUp.issue.status.replace('_', ' ')}</span>
+                                        </div>
+                                    )}
+
+                                    {item.followUp?.schedule && (
+                                        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                                            <span className="text-muted-foreground">Follow-Up</span>
+                                            <span className={item.followUp.schedule.isOverdue ? 'text-rose-500' : 'text-amber-500'}>
+                                                {item.followUp.schedule.isOverdue ? 'Overdue' : new Date(item.followUp.schedule.scheduledDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-10 text-center space-y-4">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60 italic">
+                                    No recent inspection activity.
+                                </p>
+                                <Link to="/inspector/inspections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:gap-4 transition-all pb-1 border-b-2 border-primary/20">
+                                    Access Global Archives
+                                </Link>
+                            </div>
+                        )}
+
+                        {!historyLoading && syncHistory.length > 0 && (
+                            <div className="pt-2 text-center">
+                                <Link to="/inspector/inspections" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:gap-4 transition-all pb-1 border-b-2 border-primary/20">
+                                    Access Global Archives
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
