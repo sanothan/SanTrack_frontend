@@ -1,7 +1,22 @@
 import axios from 'axios';
 
+const DEFAULT_BACKEND_ORIGIN = 'https://santrack-backend.onrender.com';
+
+const resolveApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_BASE_URL) {
+        return import.meta.env.VITE_API_BASE_URL;
+    }
+
+    if (import.meta.env.PROD) {
+        const origin = import.meta.env.VITE_BACKEND_ORIGIN || DEFAULT_BACKEND_ORIGIN;
+        return `${origin.replace(/\/$/, '')}/api`;
+    }
+
+    return '/api';
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+    baseURL: resolveApiBaseUrl(),
     headers: {
         'Content-Type': 'application/json',
     },
