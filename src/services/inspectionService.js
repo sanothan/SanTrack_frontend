@@ -11,6 +11,11 @@ export const inspectionService = {
         return response.data;
     },
 
+    getSyncHistory: async (params) => {
+        const response = await api.get('/inspections/sync-history', { params });
+        return response.data;
+    },
+
     createInspection: async (data) => {
         const response = await api.post('/inspections', data);
         return response.data;
