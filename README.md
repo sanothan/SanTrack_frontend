@@ -1,81 +1,251 @@
 # SanTrack Frontend
 
-The client-side web application for the SanTrack platform. Built with React and Vite, it serves multiple distinct user roles (Admin, Inspector, Community, and Public) to monitor and optimize rural sanitation and water access.
+React + Vite client for SanTrack.
+
+The frontend supports public pages and role-based dashboards for:
+
+- admin
+- inspector
+- community
 
 ## Tech Stack
 
-*   **Framework:** React 18
-*   **Build Tool:** Vite
-*   **Styling:** Tailwind CSS
-*   **Routing:** React Router DOM (v6)
-*   **Icons:** Lucide React
-*   **HTTP Client:** Axios
-*   **Components:** Custom UI styled directly with Tailwind classes
-
-## Key Features
-
-1.  **Public Portal:** An entry site outlining the project mission with tools for anonymous users to report sanitation issues and view contact details securely.
-2.  **Role-Based Dashboards:**
-    *   **Admin Dashboard:** Overview of users, villages, facilities, inspections, and platform-wide issues.
-    *   **Inspector Dashboard:** Focused tools for conducting field inspections, logging hygiene scores, and attaching photo evidence.
-    *   **Community Dashboard:** Ability to view local facilities, track personal reported issues, and coordinate easily.
-3.  **Authentication Flow:** Secure JWT handling managed via a central `AuthContext`.
-4.  **Responsive Layouts:** Sidebar vs Top-nav layouts dynamically adjusting per auth-level using `DashboardLayout` and `PublicLayout`.
+- React 19
+- Vite 7
+- React Router
+- Axios
+- Tailwind CSS
+- Google OAuth (`@react-oauth/google`)
 
 ## Project Structure
 
-```
+```text
 SanTrack_frontend/
-├── public/              # Static assets (favicon, images)
-├── src/
-│   ├── components/      # Reusable UI components (ProtectedRoute, Modal, etc)
-│   ├── config/          # Client-side configuration (Axios interceptors)
-│   ├── context/         # React Context providers (AuthContext)
-│   ├── layouts/         # Layout wrappers (PublicLayout, DashboardLayout, Sidebar)
-│   ├── pages/           # Page routes (PublicHome, AdminDashboard, InspectionForm)
-│   ├── services/        # API integration wrappers (auth, inspection, issue services)
-│   ├── utils/           # Utility functions (cn for tailwind classes, formatting)
-│   ├── App.jsx          # Route definitions and entry mapping
-│   ├── index.css        # Tailwind directives and global styles
-│   └── main.jsx         # React application mount
-├── index.html           # HTML template
-├── tailwind.config.js   # Tailwind theme, plugins, and color definitions
-└── vite.config.js       # Vite configuration
+  public/
+  src/
+    App.jsx
+    main.jsx
+    components/
+    context/
+    layouts/
+    pages/
+    services/
+    utils/
 ```
 
-## Getting Started
+## Setup Instructions
 
 ### Prerequisites
 
-*   Node.js (v18+ recommended)
-*   SanTrack Backend server running locally or hosted for API requests.
+- Node.js 18+
+- npm 9+
+- SanTrack backend running (default: `http://localhost:5000`)
 
-### Setup & Installation
+### 1) Install dependencies
 
-1.  **Navigate to the frontend directory:**
-    ```bash
-    cd SanTrack_frontend
-    ```
+```bash
+cd SanTrack_frontend
+npm install
+```
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
+### 2) Configure environment variables
 
-3.  **Environment Variables**
-    By default, the Vite proxy configuration connects local API calls directly to `http://localhost:5000`. You can change the backend URL in `src/config/axios.js` for production deployments.
+Create `.env` in `SanTrack_frontend`:
 
-### Running the App
+```env
+# Used by src/services/api.js
+VITE_API_BASE_URL=/api
 
-**Start Development Server:**
+# Used by src/services/scheduleService.js
+VITE_API_URL=http://localhost:5000/api
+
+# Required for Google sign-in
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+```
+
+Notes:
+
+- In development, Vite proxies `/api` to `http://localhost:5000` via `vite.config.js`.
+- If frontend and backend are deployed separately, set `VITE_API_BASE_URL` and `VITE_API_URL` to absolute backend URLs.
+
+### 3) Run the app
+
+Development:
+
 ```bash
 npm run dev
 ```
 
-The application will be served locally, typically at `http://localhost:5173`. Open your browser to view it.
+Build:
 
-**Build for Production:**
 ```bash
 npm run build
 ```
-This generates optimized static files into a `dist/` directory ready for deployment on platforms like Vercel, Netlify, or Nginx.
+
+Preview production build:
+
+```bash
+npm run preview
+```
+
+Lint:
+
+```bash
+npm run lint
+```
+
+## Routing Documentation
+
+### Public Routes
+
+| Route       | Access    | Description                                      |
+| ----------- | --------- | ------------------------------------------------ |
+| `/`         | Public    | Home page                                        |
+| `/about`    | Public    | About page                                       |
+| `/contact`  | Public    | Contact page                                     |
+| `/report`   | Public UI | Issue reporting page (submission requires login) |
+| `/login`    | Public    | Login                                            |
+| `/register` | Public    | Signup                                           |
+| `/signup`   | Public    | Signup alias                                     |
+
+### Authenticated User Routes
+
+| Route       | Access                 | Description               |
+| ----------- | ---------------------- | ------------------------- |
+| `/profile`  | Any authenticated role | Profile management        |
+| `/settings` | Any authenticated role | Placeholder settings page |
+
+### Admin Routes
+
+| Route               | Access | Description         |
+| ------------------- | ------ | ------------------- |
+| `/admin`            | Admin  | Admin dashboard     |
+| `/admin/users`      | Admin  | User management     |
+| `/admin/villages`   | Admin  | Village management  |
+| `/admin/facilities` | Admin  | Facility management |
+| `/admin/issues`     | Admin  | Issue tracking      |
+
+### Inspector Routes
+
+| Route                        | Access    | Description              |
+| ---------------------------- | --------- | ------------------------ |
+| `/inspector`                 | Inspector | Inspector dashboard      |
+| `/inspector/facilities`      | Inspector | Facility management view |
+| `/inspector/inspections`     | Inspector | Inspection management    |
+| `/inspector/inspections/new` | Inspector | New inspection form      |
+| `/inspector/schedule`        | Inspector | Tactical scheduler       |
+| `/inspector/issues`          | Inspector | Issue tracking           |
+
+### Community Routes
+
+| Route                   | Access    | Description         |
+| ----------------------- | --------- | ------------------- |
+| `/community`            | Community | Community dashboard |
+| `/community/facilities` | Community | Facility view       |
+| `/community/issues`     | Community | Issue tracking      |
+
+## API Endpoint Documentation (Frontend Integration)
+
+The frontend calls backend APIs under `/api`.
+
+### Authentication
+
+| Method | Endpoint                | Used For                               |
+| ------ | ----------------------- | -------------------------------------- |
+| POST   | `/auth/login`           | Login with email/password              |
+| POST   | `/auth/register`        | Register community user                |
+| GET    | `/auth/profile`         | Fetch current profile                  |
+| POST   | `/auth/google`          | Google login                           |
+| POST   | `/auth/verify-password` | Password confirmation in profile flows |
+| PUT    | `/auth/profile`         | Update profile/password                |
+| POST   | `/auth/deactivate`      | Deactivate account                     |
+| DELETE | `/auth/account`         | Delete account                         |
+
+### Dashboard
+
+| Method | Endpoint           | Used For                   |
+| ------ | ------------------ | -------------------------- |
+| GET    | `/dashboard/stats` | Admin dashboard statistics |
+
+### Users
+
+| Method | Endpoint     | Used For     |
+| ------ | ------------ | ------------ |
+| GET    | `/users`     | List users   |
+| GET    | `/users/:id` | User details |
+| POST   | `/users`     | Create user  |
+| PUT    | `/users/:id` | Update user  |
+| DELETE | `/users/:id` | Delete user  |
+
+### Villages
+
+| Method | Endpoint                    | Used For                       |
+| ------ | --------------------------- | ------------------------------ |
+| GET    | `/villages`                 | List villages                  |
+| GET    | `/villages/:id`             | Village details                |
+| POST   | `/villages`                 | Create village                 |
+| PUT    | `/villages/:id`             | Update village                 |
+| DELETE | `/villages/:id`             | Delete village                 |
+| GET    | `/villages/reverse-geocode` | Resolve coordinates to address |
+
+### Facilities
+
+| Method | Endpoint          | Used For         |
+| ------ | ----------------- | ---------------- |
+| GET    | `/facilities`     | List facilities  |
+| GET    | `/facilities/:id` | Facility details |
+| POST   | `/facilities`     | Create facility  |
+| PUT    | `/facilities/:id` | Update facility  |
+| DELETE | `/facilities/:id` | Delete facility  |
+
+Note:
+
+- Backend exposes `GET /facilities/public` for public-only facility list.
+- Current `facilityService.getPublicFacilities()` in frontend calls `/facilities`.
+
+### Inspections
+
+| Method | Endpoint                    | Used For               |
+| ------ | --------------------------- | ---------------------- |
+| GET    | `/inspections`              | List inspections       |
+| GET    | `/inspections/:id`          | Inspection details     |
+| GET    | `/inspections/sync-history` | Follow-up sync history |
+| POST   | `/inspections`              | Create inspection      |
+| PUT    | `/inspections/:id`          | Update inspection      |
+| DELETE | `/inspections/:id`          | Delete inspection      |
+
+### Issues
+
+| Method | Endpoint      | Used For      |
+| ------ | ------------- | ------------- |
+| GET    | `/issues`     | List issues   |
+| GET    | `/issues/:id` | Issue details |
+| POST   | `/issues`     | Create issue  |
+| PUT    | `/issues/:id` | Update issue  |
+
+### Uploads
+
+| Method | Endpoint         | Used For                |
+| ------ | ---------------- | ----------------------- |
+| POST   | `/uploads/image` | Upload inspection image |
+
+### Schedules
+
+| Method | Endpoint         | Used For        |
+| ------ | ---------------- | --------------- |
+| GET    | `/schedules`     | List schedules  |
+| POST   | `/schedules`     | Create schedule |
+| PATCH  | `/schedules/:id` | Update schedule |
+| DELETE | `/schedules/:id` | Delete schedule |
+
+## Authentication Behavior
+
+- JWT is stored in localStorage as `token`.
+- Most API calls use Axios interceptor in `services/api.js` to attach `Authorization: Bearer <token>`.
+- 401 responses clear auth storage and redirect to `/login`.
+
+## Deployment Notes
+
+- Build with `npm run build` and deploy `dist/`.
+- Ensure backend CORS allows your frontend origin.
+- Set production API environment variables to backend HTTPS URLs.
