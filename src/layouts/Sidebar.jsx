@@ -8,13 +8,14 @@ import {
     ClipboardCheck,
     AlertTriangle,
     Settings,
+    LogOut,
     Users,
     Calendar
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 const Sidebar = ({ isOpen, setOpen }) => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const role = user?.role || 'community';
 
     const navItems = [
@@ -67,18 +68,29 @@ const Sidebar = ({ isOpen, setOpen }) => {
                     </nav>
 
                     <div className="p-4 border-t">
-                        <NavLink
-                            to="/settings"
-                            className={({ isActive }) => cn(
-                                "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
-                                isActive
-                                    ? "bg-primary/10 text-primary border border-primary/20"
-                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                            )}
-                        >
-                            <Settings className="mr-3 h-5 w-5" />
-                            Settings
-                        </NavLink>
+                        {role === 'community' ? (
+                            <NavLink
+                                to="/settings"
+                                className={({ isActive }) => cn(
+                                    "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
+                                    isActive
+                                        ? "bg-primary/10 text-primary border border-primary/20"
+                                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                )}
+                            >
+                                <Settings className="mr-3 h-5 w-5" />
+                                Settings
+                            </NavLink>
+                        ) : (
+                            <button
+                                onClick={logout}
+                                className="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:bg-muted hover:text-destructive"
+                                title="Logout"
+                            >
+                                <LogOut className="mr-3 h-5 w-5" />
+                                Logout
+                            </button>
+                        )}
                     </div>
                 </div>
             </aside>
