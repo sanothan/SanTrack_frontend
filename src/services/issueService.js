@@ -19,5 +19,10 @@ export const issueService = {
     updateIssue: async (id, data) => {
         const response = await api.put(`/issues/${id}`, data);
         return response.data;
+    },
+
+    deleteIssue: async (id) => {
+        const response = await api.delete(`/issues/${id}`);
+        return response.data;
     }
 };
